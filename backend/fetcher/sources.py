@@ -54,8 +54,18 @@ SOURCES = [
         "url": "https://rss.arxiv.org/rss/cs.LG",
         "category": "Research"
     },
+    {
+        "name": "IEEE Spectrum AI",
+        "url": "https://spectrum.ieee.org/feeds/topic/artificial-intelligence.rss",
+        "category": "Research"
+    },
 
     # Community
+    {
+        "name": "Anthropic Community",
+        "url": "https://community.anthropic.com/latest.rss",
+        "category": "Community"
+    },
     {
         "name": "Reddit MachineLearning",
         "url": "https://www.reddit.com/r/MachineLearning/.rss",
@@ -65,6 +75,28 @@ SOURCES = [
         "name": "Reddit LocalLLaMA",
         "url": "https://www.reddit.com/r/LocalLLaMA/.rss",
         "category": "LLMs"
+    },
+    {
+        "name": "Reddit Artificial",
+        "url": "https://www.reddit.com/r/artificial/.rss",
+        "category": "Community"
+    },
+    {
+        "name": "Hacker News AI",
+        "url": "https://hnrss.org/newest?q=AI+OR+LLM+OR+machine+learning",
+        "category": "Community"
+    },
+
+    # YouTube
+    {
+        "name": "Yannic Kilcher",
+        "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCZHmQk67mSJgfCCTn7xBfew",
+        "category": "Research"
+    },
+    {
+        "name": "Two Minute Papers",
+        "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg",
+        "category": "Research"
     },
 
     # Newsletters
