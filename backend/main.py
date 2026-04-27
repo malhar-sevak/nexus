@@ -2,7 +2,6 @@ from fastapi import FastAPI, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
-from datetime import datetime
 import sys
 import os
 
@@ -17,7 +16,6 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Allow frontend to talk to backend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -26,15 +24,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─── Health Check ────────────────────────────────────────────
 @app.get("/")
 def root():
     return {"message": "Welcome to Nexus API 🚀"}
 
-# ─── Get All Articles (with filters + search + pagination) ───
 @app.get("/api/articles")
 def get_articles(
     category: str = Query(None),
+    source:   str = Query(None),
     search:   str = Query(None),
     page:     int = Query(1, ge=1),
     limit:    int = Query(20, le=100),
@@ -42,18 +39,17 @@ def get_articles(
 ):
     query = db.query(Article)
 
-    # Filter by category
     if category and category != "All":
         query = query.filter(Article.source_category == category)
 
-    # Search by title
+    if source and source != "All Sources":
+        query = query.filter(Article.source_name == source)
+
     if search:
         query = query.filter(Article.title.ilike(f"%{search}%"))
 
-    # Order by latest first
     query = query.order_by(desc(Article.published_at))
 
-    # Pagination
     total    = query.count()
     articles = query.offset((page - 1) * limit).limit(limit).all()
 
@@ -77,7 +73,6 @@ def get_articles(
         ]
     }
 
-# ─── Get Single Article ──────────────────────────────────────
 @app.get("/api/articles/{article_id}")
 def get_article(article_id: int, db: Session = Depends(get_db)):
     article = db.query(Article).filter(Article.id == article_id).first()
@@ -85,7 +80,6 @@ def get_article(article_id: int, db: Session = Depends(get_db)):
         return {"error": "Article not found"}
     return article
 
-# ─── Get All Categories ──────────────────────────────────────
 @app.get("/api/categories")
 def get_categories(db: Session = Depends(get_db)):
     categories = db.query(Article.source_category).distinct().all()
@@ -93,22 +87,24 @@ def get_categories(db: Session = Depends(get_db)):
         "categories": ["All"] + [c[0] for c in categories if c[0]]
     }
 
-# ─── Get Daily Digest ────────────────────────────────────────
+@app.get("/api/sources")
+def get_sources(db: Session = Depends(get_db)):
+    sources = db.query(Article.source_name).distinct().all()
+    return {
+        "sources": [s[0] for s in sources if s[0]]
+    }
+
 @app.get("/api/digest")
 def get_digest(db: Session = Depends(get_db)):
-    digest = db.query(DailyDigest).order_by(
-        desc(DailyDigest.date)
-    ).first()
+    digest = db.query(DailyDigest).order_by(desc(DailyDigest.date)).first()
     if not digest:
         return {"message": "No digest available yet"}
     return digest
 
-# ─── Trigger Manual Fetch (for testing) ─────────────────────
 @app.post("/api/fetch")
 async def trigger_fetch():
     from fetcher.rss_fetcher import fetch_all_feeds
     from ai.processor import process_untagged_articles
-    import asyncio
     fetch_all_feeds()
     await process_untagged_articles()
     return {"message": "Fetch and processing complete!"}
