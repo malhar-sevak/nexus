@@ -65,7 +65,7 @@ export default function Home() {
           position: "absolute", top: "-100px", left: "50%",
           transform: "translateX(-50%)",
           width: "600px", height: "300px",
-          background: "radial-gradient(ellipse, rgba(0,255,136,0.06) 0%, transparent 70%)",
+          background: "radial-gradient(ellipse, rgba(0,212,255,0.06) 0%, transparent 70%)",
           pointerEvents: "none",
         }} />
 
@@ -75,7 +75,7 @@ export default function Home() {
           <div style={{
             display: "inline-flex", alignItems: "center", gap: "8px",
             background: "rgba(0,255,136,0.08)",
-            border: "1px solid rgba(0,255,136,0.2)",
+            border: "1px solid rgba(0,212,255,0.2)",
             borderRadius: "100px", padding: "4px 14px", marginBottom: "20px",
           }}>
             <span className="live-dot" />
@@ -91,7 +91,7 @@ export default function Home() {
             color: "#e2e8f0", marginBottom: "12px",
           }} className="fade-up">
             Stay ahead of the{" "}
-            <span style={{ color: "#00ff88" }}>AI revolution.</span>
+            <span style={{ color: "#00d4ff" }}>AI revolution.</span>
           </h1>
 
           <p style={{
@@ -121,7 +121,7 @@ export default function Home() {
             onCategorySelect={handleCategorySelect}
             onSourceSelect={handleSourceSelect}
           />
-          <span style={{ fontSize: "11px", color: "#2a2a3e", fontFamily: "'Space Mono', monospace" }}>
+          <span style={{ fontSize: "11px", color: "#00d4ff", fontFamily: "'Space Mono', monospace" }}>
             {total} RESULTS
           </span>
         </div>
