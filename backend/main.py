@@ -10,10 +10,22 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from database.db import get_db
 from database.models import Article, DailyDigest
 
+from scheduler.job import start_scheduler
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup — start the scheduler
+    scheduler = start_scheduler()
+    yield
+    # Shutdown — stop the scheduler cleanly
+    scheduler.shutdown()
+
 app = FastAPI(
     title="Nexus API",
     description="An AI that connects you to the AI world",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 app.add_middleware(
@@ -108,3 +120,11 @@ async def trigger_fetch():
     fetch_all_feeds()
     await process_untagged_articles()
     return {"message": "Fetch and processing complete!"}
+
+@app.post("/api/run-pipeline")
+async def run_pipeline():
+    from scheduler.job import run_full_pipeline
+    import threading
+    thread = threading.Thread(target=run_full_pipeline)
+    thread.start()
+    return {"message": "Pipeline started in background!"}
