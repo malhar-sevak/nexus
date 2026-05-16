@@ -4,7 +4,9 @@ import Navbar from "../components/Navbar";
 import NewsCard from "../components/NewsCard";
 import CategoryFilter from "../components/CategoryFilter";
 import Footer from "../components/Footer";
-import { getArticles, getCategories, getSources } from "../lib/api";
+import TrendingStrip from "../components/TrendingStrip";
+import BackToTop from "../components/BackToTop";
+import { getArticles, getCategories, getSources, getCategoryCounts, getTrending } from "../lib/api";
 
 export default function Home() {
   const [articles, setArticles] = useState([]);
@@ -17,18 +19,24 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [catCounts, setCatCounts] = useState({});
+  const [trending, setTrending] = useState([]);
 
   useEffect(() => {
-    getCategories().then((data) => setCategories(data.categories));
-    getSources().then((data) => setSources(data.sources));
+    getCategories().then((data) => {
+      if (data?.categories) setCategories(["All", ...data.categories]);
+    });
+    getSources().then((data) => setSources(data?.sources || []));
+    getCategoryCounts().then((data) => setCatCounts(data?.counts || {}));
+    getTrending().then((data) => setTrending(data?.articles || []));
   }, []);
 
   const fetchArticles = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getArticles(selectedCat, selectedSource, query, page);
-      setArticles(data.articles);
-      setTotal(data.total);
+      setArticles(data?.articles || []);
+      setTotal(data?.total || 0);
     } catch (e) {
       console.error("Failed to fetch articles", e);
     } finally {
@@ -45,22 +53,15 @@ export default function Home() {
   const totalPages = Math.ceil(total / 20);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#080810" }}>
-
-      {/* Navbar with search */}
-      <Navbar
-        search={search}
-        setSearch={setSearch}
-        onSearch={handleSearch}
-      />
+    <div style={{ minHeight: "100vh", background: "#07090f" }}>
+      <Navbar search={search} setSearch={setSearch} onSearch={handleSearch} />
 
       {/* Hero */}
       <div style={{
-        borderBottom: "1px solid #1e1e2e",
+        borderBottom: "1px solid #1c2333",
         padding: "48px 24px 40px",
         position: "relative", overflow: "hidden",
       }}>
-        {/* Background glow */}
         <div style={{
           position: "absolute", top: "-100px", left: "50%",
           transform: "translateX(-50%)",
@@ -70,32 +71,29 @@ export default function Home() {
         }} />
 
         <div style={{ maxWidth: "1280px", margin: "0 auto", position: "relative" }}>
-
-          {/* Live indicator */}
           <div style={{
             display: "inline-flex", alignItems: "center", gap: "8px",
-            background: "rgba(0,255,136,0.08)",
+            background: "rgba(0,212,255,0.08)",
             border: "1px solid rgba(0,212,255,0.2)",
             borderRadius: "100px", padding: "4px 14px", marginBottom: "20px",
           }}>
             <span className="live-dot" />
-            <span style={{ fontSize: "11px", color: "#00ff88", fontFamily: "'Space Mono', monospace" }}>
+            <span style={{ fontSize: "11px", color: "#00d4ff", fontFamily: "'Space Mono', monospace" }}>
               LIVE — {total} articles tracked
             </span>
           </div>
 
-          {/* Headline */}
           <h1 style={{
             fontFamily: "'Syne', sans-serif", fontWeight: "800",
             fontSize: "clamp(28px, 4vw, 48px)", lineHeight: "1.15",
-            color: "#e2e8f0", marginBottom: "12px",
+            color: "#cdd9e5", marginBottom: "12px",
           }} className="fade-up">
             Stay ahead of the{" "}
             <span style={{ color: "#00d4ff" }}>AI revolution.</span>
           </h1>
 
           <p style={{
-            color: "#475569", fontSize: "14px",
+            color: "#444c56", fontSize: "14px",
             fontFamily: "'DM Sans', sans-serif", maxWidth: "440px",
           }} className="fade-up-delay-1">
             Every breakthrough, every model launch, every research paper —
@@ -106,6 +104,9 @@ export default function Home() {
 
       {/* Main Content */}
       <main style={{ maxWidth: "1280px", margin: "0 auto", padding: "36px 24px" }}>
+
+        {/* Trending Strip */}
+        <TrendingStrip articles={trending} />
 
         {/* Filters */}
         <div style={{
@@ -120,8 +121,9 @@ export default function Home() {
             selectedSource={selectedSource}
             onCategorySelect={handleCategorySelect}
             onSourceSelect={handleSourceSelect}
+            counts={catCounts}
           />
-          <span style={{ fontSize: "11px", color: "#00d4ff", fontFamily: "'Space Mono', monospace" }}>
+          <span style={{ fontSize: "11px", color: "#2a2a3e", fontFamily: "'Space Mono', monospace" }}>
             {total} RESULTS
           </span>
         </div>
@@ -135,9 +137,8 @@ export default function Home() {
           }}>
             {[...Array(8)].map((_, i) => (
               <div key={i} style={{
-                background: "#0e0e1a", border: "1px solid #1e1e2e",
-                borderRadius: "16px", height: "320px",
-                opacity: 0.5,
+                background: "#0d1117", border: "1px solid #1c2333",
+                borderRadius: "16px", height: "320px", opacity: 0.5,
               }} />
             ))}
           </div>
@@ -171,12 +172,12 @@ export default function Home() {
               disabled={page === 1}
               style={{
                 padding: "10px 20px", borderRadius: "10px",
-                background: "#0e0e1a", border: "1px solid #1e1e2e",
-                color: page === 1 ? "#2a2a3e" : "#e2e8f0",
+                background: "#0d1117", border: "1px solid #1c2333",
+                color: page === 1 ? "#2a2a3e" : "#cdd9e5",
                 fontSize: "12px", fontFamily: "'Space Mono', monospace",
                 cursor: page === 1 ? "not-allowed" : "pointer",
               }}>← PREV</button>
-            <span style={{ fontSize: "12px", color: "#475569", fontFamily: "'Space Mono', monospace" }}>
+            <span style={{ fontSize: "12px", color: "#444c56", fontFamily: "'Space Mono', monospace" }}>
               {page} / {totalPages}
             </span>
             <button
@@ -184,8 +185,8 @@ export default function Home() {
               disabled={page === totalPages}
               style={{
                 padding: "10px 20px", borderRadius: "10px",
-                background: "#0e0e1a", border: "1px solid #1e1e2e",
-                color: page === totalPages ? "#2a2a3e" : "#e2e8f0",
+                background: "#0d1117", border: "1px solid #1c2333",
+                color: page === totalPages ? "#2a2a3e" : "#cdd9e5",
                 fontSize: "12px", fontFamily: "'Space Mono', monospace",
                 cursor: page === totalPages ? "not-allowed" : "pointer",
               }}>NEXT →</button>
@@ -194,6 +195,7 @@ export default function Home() {
       </main>
 
       <Footer />
+      <BackToTop />
     </div>
   );
 }

@@ -26,6 +26,16 @@ export default function NewsCard({ article, index = 0 }) {
 
     const style = CATEGORY_STYLES[article.category] || CATEGORY_STYLES.Industry;
 
+    const [copied, setCopied] = useState(false);
+
+    const handleShare = (e) => {
+        e.preventDefault();
+        navigator.clipboard.writeText(article.url).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
+    };
+
     return (
         <div className="card-hover" style={{
             background: "#0d1117",
@@ -40,12 +50,21 @@ export default function NewsCard({ article, index = 0 }) {
             {/* Image */}
             <div style={{ position: "relative", width: "100%", height: "180px", overflow: "hidden", background: "#111827" }}>
                 <img
-                    src={article.image_url || "https://placehold.co/600x400/0d1117/00d4ff?text=NEXUS"}
+                    src={article.image_url || ""}
                     alt={article.title}
                     style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.8, transition: "opacity 0.3s, transform 0.4s" }}
                     onMouseEnter={e => { e.target.style.opacity = 1; e.target.style.transform = "scale(1.04)"; }}
                     onMouseLeave={e => { e.target.style.opacity = 0.8; e.target.style.transform = "scale(1)"; }}
-                    onError={e => { e.target.src = "https://placehold.co/600x400/0d1117/00d4ff?text=NEXUS"; }}
+                    onError={e => {
+                        e.target.style.display = "none";
+                        e.target.parentElement.style.background = `linear-gradient(135deg, ${style.bg} 0%, #0d1117 100%)`;
+                        e.target.parentElement.innerHTML = `
+                        <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+                        <div style="font-size:28px;font-weight:800;font-family:'Syne',sans-serif;color:${style.color};opacity:0.3;">${article.category || "AI"}</div>
+                        <div style="font-size:10px;font-family:'Space Mono',monospace;color:${style.color};opacity:0.2;letter-spacing:0.1em;">NEXUS</div>
+                        </div>
+                        `;
+                    }}
                 />
 
                 {/* Badges */}
@@ -128,6 +147,34 @@ export default function NewsCard({ article, index = 0 }) {
                             {article.source_name}
                         </span>
                     </div>
+
+                    {/* Share button */}
+                    <button onClick={handleShare} style={{
+                        background: "none", border: "none",
+                        color: copied ? "#4ade80" : "#444c56",
+                        fontSize: "11px", fontFamily: "'Space Mono', monospace",
+                        cursor: "pointer", padding: "0",
+                        display: "flex", alignItems: "center", gap: "4px",
+                        transition: "color 0.2s",
+                    }}>
+                        {copied ? (
+                            <>
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                                Copied!
+                            </>
+                        ) : (
+                            <>
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                                </svg>
+                                Share
+                            </>
+                        )}
+                    </button>
                     <a href={article.url} target="_blank" rel="noopener noreferrer" style={{
                         display: "flex", alignItems: "center", gap: "5px",
                         color: "#00d4ff", fontSize: "11px",
