@@ -99,7 +99,7 @@ export default function Home() {
 
       {/* Main layout container with full height flex */}
       <div style={{ display: "flex", flex: 1, position: "relative", alignItems: "stretch" }}>
-        
+
         {/* Sticky Sidebar starting right below the navbar */}
         <Sidebar
           categories={categories}
@@ -187,7 +187,7 @@ export default function Home() {
             {loading ? (
               <div style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                gridTemplateColumns: "repeat(3, 1fr)",
                 gap: "20px",
               }}>
                 {[...Array(8)].map((_, i) => (
@@ -208,7 +208,7 @@ export default function Home() {
               <>
                 <div style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                  gridTemplateColumns: "repeat(3, 1fr)",
                   gap: "20px",
                 }}>
                   {articles.map((article, i) => (
