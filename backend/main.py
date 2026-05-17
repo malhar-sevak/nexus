@@ -48,33 +48,35 @@ def format_dt(dt):
 
 @app.get("/api/articles")
 def get_articles(
-    category: str = Query(None),
-    source:   str = Query(None),
-    search:   str = Query(None),
-    page:     int = Query(1, ge=1),
-    limit:    int = Query(20, le=100),
-    db:       Session = Depends(get_db)
+    category:  str = Query(None),
+    source:    str = Query(None),
+    search:    str = Query(None),
+    sort_by:   str = Query("latest"),
+    page:      int = Query(1, ge=1),
+    limit:     int = Query(20, le=100),
+    db:        Session = Depends(get_db)
 ):
     query = db.query(Article)
 
     if category and category != "All":
         query = query.filter(Article.source_category == category)
-
     if source and source != "All Sources":
         query = query.filter(Article.source_name == source)
-
     if search:
         query = query.filter(Article.title.ilike(f"%{search}%"))
 
-    query = query.order_by(desc(Article.published_at))
+    if sort_by == "oldest":
+        query = query.order_by(Article.published_at)
+    else:
+        query = query.order_by(desc(Article.published_at))
 
     total    = query.count()
     articles = query.offset((page - 1) * limit).limit(limit).all()
 
     return {
-        "total":    total,
-        "page":     page,
-        "limit":    limit,
+        "total": total,
+        "page":  page,
+        "limit": limit,
         "articles": [
             {
                 "id":           a.id,
@@ -84,13 +86,12 @@ def get_articles(
                 "category":     a.source_category,
                 "summary":      a.summary,
                 "image_url":    a.image_url,
-                "published_at": format_dt(a.published_at),
-                "fetched_at":   format_dt(a.fetched_at),
+                "published_at": a.published_at,
+                "fetched_at":   a.fetched_at,
             }
             for a in articles
         ]
     }
-
 @app.get("/api/articles/{article_id}")
 def get_article(article_id: int, db: Session = Depends(get_db)):
     article = db.query(Article).filter(Article.id == article_id).first()

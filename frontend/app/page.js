@@ -1,8 +1,8 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Navbar from "../components/Navbar";
 import NewsCard from "../components/NewsCard";
-import CategoryFilter from "../components/CategoryFilter";
+import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
 import TrendingStrip from "../components/TrendingStrip";
 import BackToTop from "../components/BackToTop";
@@ -14,185 +14,240 @@ export default function Home() {
   const [sources, setSources] = useState([]);
   const [selectedCat, setSelectedCat] = useState("All");
   const [selectedSource, setSelectedSource] = useState("All Sources");
+  const [sortBy, setSortBy] = useState("latest");
   const [search, setSearch] = useState("");
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [catCounts, setCatCounts] = useState({});
   const [trending, setTrending] = useState([]);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const observerRef = useRef(null);
+  const sentinelRef = useRef(null);
 
   useEffect(() => {
-    getCategories().then((data) => {
-      if (data?.categories) setCategories(["All", ...data.categories]);
-    });
-    getSources().then((data) => setSources(data?.sources || []));
-    getCategoryCounts().then((data) => setCatCounts(data?.counts || {}));
-    getTrending().then((data) => setTrending(data?.articles || []));
+    getCategories().then((data) => setCategories(data.categories));
+    getSources().then((data) => setSources(data.sources));
+    getCategoryCounts().then((data) => setCatCounts(data.counts));
+    getTrending().then((data) => setTrending(data.articles || []));
   }, []);
 
-  const fetchArticles = useCallback(async () => {
-    setLoading(true);
+  // Reset articles when filters change
+  useEffect(() => {
+    setArticles([]);
+    setPage(1);
+    setHasMore(true);
+  }, [selectedCat, selectedSource, query, sortBy]);
+
+  // Fetch articles
+  const fetchArticles = useCallback(async (pageNum) => {
+    if (pageNum === 1) setLoading(true);
+    else setLoadingMore(true);
+
     try {
-      const data = await getArticles(selectedCat, selectedSource, query, page);
-      setArticles(data?.articles || []);
-      setTotal(data?.total || 0);
+      const data = await getArticles(selectedCat, selectedSource, query, pageNum, sortBy);
+      if (pageNum === 1) {
+        setArticles(data.articles);
+      } else {
+        setArticles(prev => [...prev, ...data.articles]);
+      }
+      setTotal(data.total);
+      setHasMore(data.articles.length === 20);
     } catch (e) {
       console.error("Failed to fetch articles", e);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  }, [selectedCat, selectedSource, query, page]);
+  }, [selectedCat, selectedSource, query, sortBy]);
 
-  useEffect(() => { fetchArticles(); }, [fetchArticles]);
+  useEffect(() => {
+    fetchArticles(page);
+  }, [page, fetchArticles]);
 
-  const handleCategorySelect = (cat) => { setSelectedCat(cat); setPage(1); };
-  const handleSourceSelect = (src) => { setSelectedSource(src); setPage(1); };
-  const handleSearch = () => { setQuery(search); setPage(1); };
+  // Infinite scroll observer
+  useEffect(() => {
+    if (observerRef.current) observerRef.current.disconnect();
 
-  const totalPages = Math.ceil(total / 20);
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
+          setPage(prev => prev + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sentinelRef.current) {
+      observerRef.current.observe(sentinelRef.current);
+    }
+
+    return () => observerRef.current?.disconnect();
+  }, [hasMore, loadingMore, loading]);
+
+  const handleCategorySelect = (cat) => { setSelectedCat(cat); };
+  const handleSourceSelect = (src) => { setSelectedSource(src); };
+  const handleSortChange = (s) => { setSortBy(s); };
+  const handleSearch = () => { setQuery(search); };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#07090f" }}>
+    <div style={{ minHeight: "100vh", background: "#07090f", display: "flex", flexDirection: "column" }}>
       <Navbar search={search} setSearch={setSearch} onSearch={handleSearch} />
 
-      {/* Hero */}
-      <div style={{
-        borderBottom: "1px solid #1c2333",
-        padding: "48px 24px 40px",
-        position: "relative", overflow: "hidden",
-      }}>
-        <div style={{
-          position: "absolute", top: "-100px", left: "50%",
-          transform: "translateX(-50%)",
-          width: "600px", height: "300px",
-          background: "radial-gradient(ellipse, rgba(0,212,255,0.06) 0%, transparent 70%)",
-          pointerEvents: "none",
-        }} />
+      {/* Main layout container with full height flex */}
+      <div style={{ display: "flex", flex: 1, position: "relative", alignItems: "stretch" }}>
+        
+        {/* Sticky Sidebar starting right below the navbar */}
+        <Sidebar
+          categories={categories}
+          sources={sources}
+          selectedCategory={selectedCat}
+          selectedSource={selectedSource}
+          onCategorySelect={handleCategorySelect}
+          onSourceSelect={handleSourceSelect}
+          counts={catCounts}
+          sortBy={sortBy}
+          onSortChange={handleSortChange}
+          isCollapsed={isCollapsed}
+          setIsCollapsed={setIsCollapsed}
+        />
 
-        <div style={{ maxWidth: "1280px", margin: "0 auto", position: "relative" }}>
+        {/* Content Pane containing Hero, Trending and Feed */}
+        <div style={{
+          flex: 1,
+          minWidth: 0,
+          display: "flex",
+          flexDirection: "column",
+        }}>
+
+          {/* Hero Section */}
           <div style={{
-            display: "inline-flex", alignItems: "center", gap: "8px",
-            background: "rgba(0,212,255,0.08)",
-            border: "1px solid rgba(0,212,255,0.2)",
-            borderRadius: "100px", padding: "4px 14px", marginBottom: "20px",
+            borderBottom: "1px solid #1c2333",
+            padding: "48px 24px 40px",
+            position: "relative", overflow: "hidden",
           }}>
-            <span className="live-dot" />
-            <span style={{ fontSize: "11px", color: "#00d4ff", fontFamily: "'Space Mono', monospace" }}>
-              LIVE — {total} articles tracked
-            </span>
+            <div style={{
+              position: "absolute", top: "-100px", left: "50%",
+              transform: "translateX(-50%)",
+              width: "600px", height: "300px",
+              background: "radial-gradient(ellipse, rgba(0,212,255,0.06) 0%, transparent 70%)",
+              pointerEvents: "none",
+            }} />
+            <div style={{ maxWidth: "1280px", margin: "0 auto", position: "relative" }}>
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: "8px",
+                background: "rgba(0,212,255,0.08)",
+                border: "1px solid rgba(0,212,255,0.2)",
+                borderRadius: "100px", padding: "4px 14px", marginBottom: "20px",
+              }}>
+                <span className="live-dot" />
+                <span style={{ fontSize: "11px", color: "#00d4ff", fontFamily: "'Space Mono', monospace" }}>
+                  LIVE — {total} articles tracked
+                </span>
+              </div>
+
+              <h1 style={{
+                fontFamily: "'Syne', sans-serif", fontWeight: "800",
+                fontSize: "clamp(28px, 4vw, 48px)", lineHeight: "1.15",
+                color: "#cdd9e5", marginBottom: "12px",
+              }} className="fade-up">
+                Stay ahead of the{" "}
+                <span style={{ color: "#00d4ff" }}>AI revolution.</span>
+              </h1>
+
+              <p style={{
+                color: "#444c56", fontSize: "14px",
+                fontFamily: "'DM Sans', sans-serif", maxWidth: "440px",
+              }} className="fade-up-delay-1">
+                Every breakthrough, every model launch, every research paper —
+                curated by AI, delivered in real time.
+              </p>
+            </div>
           </div>
 
-          <h1 style={{
-            fontFamily: "'Syne', sans-serif", fontWeight: "800",
-            fontSize: "clamp(28px, 4vw, 48px)", lineHeight: "1.15",
-            color: "#cdd9e5", marginBottom: "12px",
-          }} className="fade-up">
-            Stay ahead of the{" "}
-            <span style={{ color: "#00d4ff" }}>AI revolution.</span>
-          </h1>
+          {/* Feed Content Pane */}
+          <main style={{ maxWidth: "1280px", width: "100%", margin: "0 auto", padding: "36px 24px", boxSizing: "border-box" }}>
 
-          <p style={{
-            color: "#444c56", fontSize: "14px",
-            fontFamily: "'DM Sans', sans-serif", maxWidth: "440px",
-          }} className="fade-up-delay-1">
-            Every breakthrough, every model launch, every research paper —
-            curated by AI, delivered in real time.
-          </p>
+            {/* Trending */}
+            <TrendingStrip articles={trending} />
+
+            {/* Results count */}
+            <div style={{
+              fontSize: "11px", color: "#2a2a3e",
+              fontFamily: "'Space Mono', monospace",
+              marginBottom: "20px",
+            }}>
+              {total} RESULTS
+            </div>
+
+            {/* Grid */}
+            {loading ? (
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                gap: "20px",
+              }}>
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} style={{
+                    background: "#0d1117", border: "1px solid #1c2333",
+                    borderRadius: "16px", height: "320px", opacity: 0.5,
+                  }} />
+                ))}
+              </div>
+            ) : articles.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "80px 0", color: "#2a2a3e" }}>
+                <div style={{ fontSize: "48px", marginBottom: "16px" }}>◎</div>
+                <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "13px" }}>
+                  NO ARTICLES FOUND
+                </p>
+              </div>
+            ) : (
+              <>
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                  gap: "20px",
+                }}>
+                  {articles.map((article, i) => (
+                    <NewsCard key={`${article.id}-${i}`} article={article} index={i % 20} />
+                  ))}
+                </div>
+
+                {/* Infinite scroll sentinel */}
+                <div ref={sentinelRef} style={{ height: "40px", marginTop: "20px" }} />
+
+                {/* Loading more indicator */}
+                {loadingMore && (
+                  <div style={{
+                    display: "flex", justifyContent: "center",
+                    alignItems: "center", gap: "8px",
+                    padding: "20px 0",
+                  }}>
+                    <span className="live-dot" />
+                    <span style={{ fontSize: "11px", color: "#444c56", fontFamily: "'Space Mono', monospace" }}>
+                      LOADING MORE...
+                    </span>
+                  </div>
+                )}
+
+                {/* End of feed */}
+                {!hasMore && articles.length > 0 && (
+                  <div style={{
+                    textAlign: "center", padding: "32px 0",
+                    color: "#1c2333", fontSize: "11px",
+                    fontFamily: "'Space Mono', monospace",
+                  }}>
+                    — END OF FEED —
+                  </div>
+                )}
+              </>
+            )}
+          </main>
         </div>
       </div>
-
-      {/* Main Content */}
-      <main style={{ maxWidth: "1280px", margin: "0 auto", padding: "36px 24px" }}>
-
-        {/* Trending Strip */}
-        <TrendingStrip articles={trending} />
-
-        {/* Filters */}
-        <div style={{
-          display: "flex", alignItems: "center",
-          justifyContent: "space-between", flexWrap: "wrap",
-          gap: "16px", marginBottom: "28px",
-        }}>
-          <CategoryFilter
-            categories={categories}
-            sources={sources}
-            selectedCategory={selectedCat}
-            selectedSource={selectedSource}
-            onCategorySelect={handleCategorySelect}
-            onSourceSelect={handleSourceSelect}
-            counts={catCounts}
-          />
-          <span style={{ fontSize: "11px", color: "#2a2a3e", fontFamily: "'Space Mono', monospace" }}>
-            {total} RESULTS
-          </span>
-        </div>
-
-        {/* Grid */}
-        {loading ? (
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-            gap: "20px",
-          }}>
-            {[...Array(8)].map((_, i) => (
-              <div key={i} style={{
-                background: "#0d1117", border: "1px solid #1c2333",
-                borderRadius: "16px", height: "320px", opacity: 0.5,
-              }} />
-            ))}
-          </div>
-        ) : articles.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "80px 0", color: "#2a2a3e" }}>
-            <div style={{ fontSize: "48px", marginBottom: "16px" }}>◎</div>
-            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "13px" }}>
-              NO ARTICLES FOUND
-            </p>
-          </div>
-        ) : (
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-            gap: "20px",
-          }}>
-            {articles.map((article, i) => (
-              <NewsCard key={article.id} article={article} index={i} />
-            ))}
-          </div>
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div style={{
-            display: "flex", justifyContent: "center",
-            alignItems: "center", gap: "12px", marginTop: "48px",
-          }}>
-            <button
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={page === 1}
-              style={{
-                padding: "10px 20px", borderRadius: "10px",
-                background: "#0d1117", border: "1px solid #1c2333",
-                color: page === 1 ? "#2a2a3e" : "#cdd9e5",
-                fontSize: "12px", fontFamily: "'Space Mono', monospace",
-                cursor: page === 1 ? "not-allowed" : "pointer",
-              }}>← PREV</button>
-            <span style={{ fontSize: "12px", color: "#444c56", fontFamily: "'Space Mono', monospace" }}>
-              {page} / {totalPages}
-            </span>
-            <button
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              style={{
-                padding: "10px 20px", borderRadius: "10px",
-                background: "#0d1117", border: "1px solid #1c2333",
-                color: page === totalPages ? "#2a2a3e" : "#cdd9e5",
-                fontSize: "12px", fontFamily: "'Space Mono', monospace",
-                cursor: page === totalPages ? "not-allowed" : "pointer",
-              }}>NEXT →</button>
-          </div>
-        )}
-      </main>
 
       <Footer />
       <BackToTop />
