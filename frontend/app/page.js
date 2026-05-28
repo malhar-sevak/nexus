@@ -6,6 +6,7 @@ import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
 import HeroCarousel from "../components/HeroCarousel";
 import BackToTop from "../components/BackToTop";
+import CountUp from "../components/CountUp";
 import { getArticles, getCategories, getSources, getCategoryCounts } from "../lib/api";
 
 export default function Home() {
@@ -135,7 +136,7 @@ export default function Home() {
               fontFamily: "'Space Mono', monospace",
               marginBottom: "20px",
             }}>
-              {total} RESULTS
+              <>LIVE — <CountUp target={total} /> articles tracked</>
             </div>
 
             {/* Grid */}
