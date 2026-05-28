@@ -4,9 +4,9 @@ import Navbar from "../components/Navbar";
 import NewsCard from "../components/NewsCard";
 import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
-import TrendingStrip from "../components/TrendingStrip";
+import HeroCarousel from "../components/HeroCarousel";
 import BackToTop from "../components/BackToTop";
-import { getArticles, getCategories, getSources, getCategoryCounts, getTrending } from "../lib/api";
+import { getArticles, getCategories, getSources, getCategoryCounts } from "../lib/api";
 
 export default function Home() {
   const [articles, setArticles] = useState([]);
@@ -23,7 +23,6 @@ export default function Home() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [catCounts, setCatCounts] = useState({});
-  const [trending, setTrending] = useState([]);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const observerRef = useRef(null);
   const sentinelRef = useRef(null);
@@ -32,7 +31,6 @@ export default function Home() {
     getCategories().then((data) => setCategories(data.categories));
     getSources().then((data) => setSources(data.sources));
     getCategoryCounts().then((data) => setCatCounts(data.counts));
-    getTrending().then((data) => setTrending(data.articles || []));
   }, []);
 
   // Reset articles when filters change
@@ -123,56 +121,13 @@ export default function Home() {
           flexDirection: "column",
         }}>
 
-          {/* Hero Section */}
-          <div style={{
-            borderBottom: "1px solid #1c2333",
-            padding: "48px 24px 40px",
-            position: "relative", overflow: "hidden",
-          }}>
-            <div style={{
-              position: "absolute", top: "-100px", left: "50%",
-              transform: "translateX(-50%)",
-              width: "600px", height: "300px",
-              background: "radial-gradient(ellipse, rgba(0,212,255,0.06) 0%, transparent 70%)",
-              pointerEvents: "none",
-            }} />
-            <div style={{ maxWidth: "1280px", margin: "0 auto", position: "relative" }}>
-              <div style={{
-                display: "inline-flex", alignItems: "center", gap: "8px",
-                background: "rgba(0,212,255,0.08)",
-                border: "1px solid rgba(0,212,255,0.2)",
-                borderRadius: "100px", padding: "4px 14px", marginBottom: "20px",
-              }}>
-                <span className="live-dot" />
-                <span style={{ fontSize: "11px", color: "#00d4ff", fontFamily: "'Space Mono', monospace" }}>
-                  LIVE — {total} articles tracked
-                </span>
-              </div>
 
-              <h1 style={{
-                fontFamily: "'Syne', sans-serif", fontWeight: "800",
-                fontSize: "clamp(28px, 4vw, 48px)", lineHeight: "1.15",
-                color: "#cdd9e5", marginBottom: "12px",
-              }} className="fade-up">
-                Stay ahead of the{" "}
-                <span style={{ color: "#00d4ff" }}>AI revolution.</span>
-              </h1>
-
-              <p style={{
-                color: "#444c56", fontSize: "14px",
-                fontFamily: "'DM Sans', sans-serif", maxWidth: "440px",
-              }} className="fade-up-delay-1">
-                Every breakthrough, every model launch, every research paper —
-                curated by AI, delivered in real time.
-              </p>
-            </div>
-          </div>
 
           {/* Feed Content Pane */}
           <main style={{ maxWidth: "1280px", width: "100%", margin: "0 auto", padding: "36px 24px", boxSizing: "border-box" }}>
 
             {/* Trending */}
-            <TrendingStrip articles={trending} />
+            <HeroCarousel total={total} />
 
             {/* Results count */}
             <div style={{
