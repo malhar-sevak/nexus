@@ -1,8 +1,11 @@
 import httpx
 import os
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
@@ -58,7 +61,7 @@ and so on for all articles."""
             data = response.json()
 
             if "error" in data:
-                print(f"Model {model} failed: {data['error']['message']}")
+                logger.warning(f"Model {model} failed: {data['error']['message']}")
                 continue
 
             content = data["choices"][0]["message"]["content"].strip()
@@ -66,7 +69,7 @@ and so on for all articles."""
             return results
 
         except Exception as e:
-            print(f"Model {model} error: {e}")
+            logger.error(f"Model {model} error: {e}")
             continue
 
     # All models failed — return fallback for all articles

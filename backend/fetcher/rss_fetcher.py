@@ -1,6 +1,7 @@
 import feedparser
 import sys
 import os
+import logging
 from datetime import datetime
 from rapidfuzz import fuzz
 
@@ -11,6 +12,8 @@ from database.models import Article
 from fetcher.sources import SOURCES
 from fetcher.image_extractor import get_image_from_url
 
+logger = logging.getLogger(__name__)
+
 def is_duplicate(title, existing_titles, threshold=85):
     for existing in existing_titles:
         if fuzz.ratio(title.lower(), existing.lower()) > threshold:
@@ -18,7 +21,7 @@ def is_duplicate(title, existing_titles, threshold=85):
     return False
 
 def fetch_all_feeds():
-    print(f"[{datetime.now()}] Starting RSS fetch...")
+    logger.info("Starting RSS fetch...")
     db = SessionLocal()
 
     try:
@@ -27,7 +30,7 @@ def fetch_all_feeds():
         new_count = 0
 
         for source in SOURCES:
-            print(f"Fetching: {source['name']}...")
+            logger.info(f"Fetching: {source['name']}...")
             try:
                 feed = feedparser.parse(source["url"])
 
@@ -77,14 +80,14 @@ def fetch_all_feeds():
                     new_count += 1
 
             except Exception as e:
-                print(f"Error fetching {source['name']}: {e}")
+                logger.error(f"Error fetching {source['name']}: {e}")
                 continue
 
         db.commit()
-        print(f"[{datetime.now()}] Fetch complete! {new_count} new articles saved.")
+        logger.info(f"Fetch complete! {new_count} new articles saved.")
 
     except Exception as e:
-        print(f"Fatal error: {e}")
+        logger.error(f"Fatal error during fetch: {e}")
         db.rollback()
     finally:
         db.close()

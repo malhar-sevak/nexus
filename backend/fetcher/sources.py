@@ -59,12 +59,22 @@ SOURCES = [
         "url": "https://spectrum.ieee.org/feeds/topic/artificial-intelligence.rss",
         "category": "Research"
     },
+    {
+    "name": "Papers With Code",
+    "url": "https://paperswithcode.com/latest.rss",
+    "category": "Research"
+    },
 
     # Community
     {
-        "name": "Anthropic Community",
-        "url": "https://community.anthropic.com/latest.rss",
-        "category": "Community"
+    "name": "Anthropic News",
+    "url": "https://www.anthropic.com/news.rss",
+    "category": "Industry"
+    },
+    {
+    "name": "Anthropic Engineering",
+    "url": "https://raw.githubusercontent.com/cnzhujie/ai-rss-feed/main/rss/anthropic_engineering_rss.xml",
+    "category": "Research"
     },
     {
         "name": "Reddit MachineLearning",

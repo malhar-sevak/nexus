@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc
 import sys
 import os
+import logging
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -11,10 +12,18 @@ from database.db import get_db
 from database.models import Article, DailyDigest
 
 from scheduler.job import start_scheduler
+from admin.router import router as admin_router
+from admin.log_handler import AdminLogHandler
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Hook AdminLogHandler into the root logger so all modules feed into it
+    admin_handler = AdminLogHandler()
+    admin_handler.setFormatter(logging.Formatter("%(message)s"))
+    logging.getLogger().addHandler(admin_handler)
+    logging.getLogger().setLevel(logging.INFO)
+
     # Startup — start the scheduler
     scheduler = start_scheduler()
     yield
@@ -30,11 +39,14 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3002"],
+    allow_origins=["http://localhost:3002", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount admin router
+app.include_router(admin_router)
 
 @app.get("/")
 def root():
