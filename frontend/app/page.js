@@ -1,212 +1,120 @@
-"use client";
-import { useState, useEffect, useCallback, useRef } from "react";
-import Navbar from "../components/Navbar";
-import NewsCard from "../components/NewsCard";
-import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
-import HeroCarousel from "../components/HeroCarousel";
-import BackToTop from "../components/BackToTop";
-import CountUp from "../components/CountUp";
-import { getArticles, getCategories, getSources, getCategoryCounts } from "../lib/api";
+import ArticleFeed from "../components/ArticleFeed";
 
-export default function Home() {
-  const [articles, setArticles] = useState([]);
-  const [categories, setCategories] = useState(["All"]);
-  const [sources, setSources] = useState([]);
-  const [selectedCat, setSelectedCat] = useState("All");
-  const [selectedSource, setSelectedSource] = useState("All Sources");
-  const [sortBy, setSortBy] = useState("latest");
-  const [search, setSearch] = useState("");
-  const [query, setQuery] = useState("");
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [catCounts, setCatCounts] = useState({});
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const observerRef = useRef(null);
-  const sentinelRef = useRef(null);
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
-  useEffect(() => {
-    getCategories().then((data) => setCategories(data.categories));
-    getSources().then((data) => setSources(data.sources));
-    getCategoryCounts().then((data) => setCatCounts(data.counts));
-  }, []);
+// ── Metadata — fully rich Open Graph + Twitter cards ─────────────────────────
+export const metadata = {
+    title: "Nexus — Live AI & ML News, Curated by AI",
+    description:
+        "Real-time artificial intelligence and machine learning news from OpenAI, DeepMind, arXiv, Hugging Face and 20+ sources — curated by AI, delivered every hour.",
+    keywords: [
+        "AI news", "machine learning news", "LLM news", "artificial intelligence",
+        "deep learning", "OpenAI", "DeepMind", "Hugging Face", "arXiv papers",
+    ],
+    openGraph: {
+        type:        "website",
+        title:       "Nexus — Live AI & ML News",
+        description: "Real-time AI news from 20+ sources, curated by AI. Updated every hour.",
+        siteName:    "Nexus",
+    },
+    twitter: {
+        card:        "summary_large_image",
+        title:       "Nexus — Live AI & ML News",
+        description: "Real-time AI news from 20+ sources, curated by AI.",
+    },
+    alternates: {
+        canonical: "/",
+    },
+};
 
-  // Reset articles when filters change
-  useEffect(() => {
-    setArticles([]);
-    setPage(1);
-    setHasMore(true);
-  }, [selectedCat, selectedSource, query, sortBy]);
+// ── Server-side data fetchers ─────────────────────────────────────────────────
 
-  // Fetch articles
-  const fetchArticles = useCallback(async (pageNum) => {
-    if (pageNum === 1) setLoading(true);
-    else setLoadingMore(true);
-
+async function fetchArticles() {
     try {
-      const data = await getArticles(selectedCat, selectedSource, query, pageNum, sortBy);
-      if (pageNum === 1) {
-        setArticles(data.articles);
-      } else {
-        setArticles(prev => [...prev, ...data.articles]);
-      }
-      setTotal(data.total);
-      setHasMore(data.articles.length === 20);
-    } catch (e) {
-      console.error("Failed to fetch articles", e);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
+        const res = await fetch(`${API_BASE}/api/articles?page=1&limit=20&sort_by=latest`, {
+            next: { revalidate: 300 }, // re-fetch every 5 minutes on Vercel / prod
+        });
+        if (!res.ok) return { articles: [], total: 0 };
+        return res.json();
+    } catch {
+        return { articles: [], total: 0 };
     }
-  }, [selectedCat, selectedSource, query, sortBy]);
+}
 
-  useEffect(() => {
-    fetchArticles(page);
-  }, [page, fetchArticles]);
-
-  // Infinite scroll observer
-  useEffect(() => {
-    if (observerRef.current) observerRef.current.disconnect();
-
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
-          setPage(prev => prev + 1);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (sentinelRef.current) {
-      observerRef.current.observe(sentinelRef.current);
+async function fetchCategories() {
+    try {
+        const res = await fetch(`${API_BASE}/api/categories`, { next: { revalidate: 3600 } });
+        if (!res.ok) return { categories: ["All"] };
+        return res.json();
+    } catch {
+        return { categories: ["All"] };
     }
+}
 
-    return () => observerRef.current?.disconnect();
-  }, [hasMore, loadingMore, loading]);
+async function fetchSources() {
+    try {
+        const res = await fetch(`${API_BASE}/api/sources`, { next: { revalidate: 3600 } });
+        if (!res.ok) return { sources: [] };
+        return res.json();
+    } catch {
+        return { sources: [] };
+    }
+}
 
-  const handleCategorySelect = (cat) => { setSelectedCat(cat); };
-  const handleSourceSelect = (src) => { setSelectedSource(src); };
-  const handleSortChange = (s) => { setSortBy(s); };
-  const handleSearch = () => { setQuery(search); };
+async function fetchCatCounts() {
+    try {
+        const res = await fetch(`${API_BASE}/api/categories/counts`, { next: { revalidate: 300 } });
+        if (!res.ok) return { counts: {} };
+        return res.json();
+    } catch {
+        return { counts: {} };
+    }
+}
 
-  return (
-    <div style={{ minHeight: "100vh", background: "#07090f", display: "flex", flexDirection: "column" }}>
-      <Navbar search={search} setSearch={setSearch} onSearch={handleSearch} />
+// ── Page — Server Component ───────────────────────────────────────────────────
+export default async function Home() {
+    // All fetches run in parallel on the server before any HTML is sent
+    const [articlesData, categoriesData, sourcesData, countsData] = await Promise.all([
+        fetchArticles(),
+        fetchCategories(),
+        fetchSources(),
+        fetchCatCounts(),
+    ]);
 
-      {/* Main layout container with full height flex */}
-      <div style={{ display: "flex", flex: 1, position: "relative", alignItems: "stretch" }}>
+    const initialArticles    = articlesData.articles    || [];
+    const initialTotal       = articlesData.total       || 0;
+    const initialCategories  = categoriesData.categories || ["All"];
+    const initialSources     = sourcesData.sources      || [];
+    const initialCatCounts   = countsData.counts        || {};
 
-        {/* Sticky Sidebar starting right below the navbar */}
-        <Sidebar
-          categories={categories}
-          sources={sources}
-          selectedCategory={selectedCat}
-          selectedSource={selectedSource}
-          onCategorySelect={handleCategorySelect}
-          onSourceSelect={handleSourceSelect}
-          counts={catCounts}
-          sortBy={sortBy}
-          onSortChange={handleSortChange}
-          isCollapsed={isCollapsed}
-          setIsCollapsed={setIsCollapsed}
-        />
-
-        {/* Content Pane containing Hero, Trending and Feed */}
-        <div style={{
-          flex: 1,
-          minWidth: 0,
-          display: "flex",
-          flexDirection: "column",
-        }}>
-
-
-
-          {/* Feed Content Pane */}
-          <main style={{ maxWidth: "1280px", width: "100%", margin: "0 auto", padding: "36px 24px", boxSizing: "border-box" }}>
-
-            {/* Trending */}
-            <HeroCarousel total={total} />
-
-            {/* Results count */}
-            <div style={{
-              fontSize: "11px", color: "#2a2a3e",
-              fontFamily: "'Space Mono', monospace",
-              marginBottom: "20px",
-            }}>
-              <>LIVE — <CountUp target={total} /> articles tracked</>
+    return (
+        <>
+            {/*
+              Hidden semantic article list — crawled by Google, invisible to users.
+              This ensures every article title + summary is in the raw HTML that
+              search engine bots receive, even before JS executes.
+            */}
+            <div style={{ position: "absolute", width: "1px", height: "1px", overflow: "hidden", opacity: 0, pointerEvents: "none" }} aria-hidden="true">
+                <h1>Nexus — Live AI &amp; ML News Feed</h1>
+                <p>Real-time AI and machine learning news curated by artificial intelligence from OpenAI, DeepMind, arXiv, Hugging Face and 20+ leading sources. Updated every hour.</p>
+                {initialArticles.map(a => (
+                    <article key={a.id}>
+                        <h2>{a.title}</h2>
+                        {a.summary && <p>{a.summary}</p>}
+                        <span>{a.source_name}</span>
+                        {a.published_at && <time dateTime={a.published_at}>{a.published_at}</time>}
+                    </article>
+                ))}
             </div>
 
-            {/* Grid */}
-            {loading ? (
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: "20px",
-              }}>
-                {[...Array(8)].map((_, i) => (
-                  <div key={i} style={{
-                    background: "#0d1117", border: "1px solid #1c2333",
-                    borderRadius: "16px", height: "320px", opacity: 0.5,
-                  }} />
-                ))}
-              </div>
-            ) : articles.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "80px 0", color: "#2a2a3e" }}>
-                <div style={{ fontSize: "48px", marginBottom: "16px" }}>◎</div>
-                <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "13px" }}>
-                  NO ARTICLES FOUND
-                </p>
-              </div>
-            ) : (
-              <>
-                <div style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(3, 1fr)",
-                  gap: "20px",
-                }}>
-                  {articles.map((article, i) => (
-                    <NewsCard key={`${article.id}-${i}`} article={article} index={i % 20} />
-                  ))}
-                </div>
-
-                {/* Infinite scroll sentinel */}
-                <div ref={sentinelRef} style={{ height: "40px", marginTop: "20px" }} />
-
-                {/* Loading more indicator */}
-                {loadingMore && (
-                  <div style={{
-                    display: "flex", justifyContent: "center",
-                    alignItems: "center", gap: "8px",
-                    padding: "20px 0",
-                  }}>
-                    <span className="live-dot" />
-                    <span style={{ fontSize: "11px", color: "#444c56", fontFamily: "'Space Mono', monospace" }}>
-                      LOADING MORE...
-                    </span>
-                  </div>
-                )}
-
-                {/* End of feed */}
-                {!hasMore && articles.length > 0 && (
-                  <div style={{
-                    textAlign: "center", padding: "32px 0",
-                    color: "#1c2333", fontSize: "11px",
-                    fontFamily: "'Space Mono', monospace",
-                  }}>
-                    — END OF FEED —
-                  </div>
-                )}
-              </>
-            )}
-          </main>
-        </div>
-      </div>
-
-      <Footer />
-      <BackToTop />
-    </div>
-  );
+            {/* Interactive feed — hydrates client-side after initial SSR */}
+            <ArticleFeed
+                initialArticles={initialArticles}
+                initialTotal={initialTotal}
+                initialCategories={initialCategories}
+                initialSources={initialSources}
+                initialCatCounts={initialCatCounts}
+            />
+        </>
+    );
 }
