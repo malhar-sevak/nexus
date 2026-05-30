@@ -2,7 +2,7 @@ import feedparser
 import sys
 import os
 import logging
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from rapidfuzz import fuzz
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -24,10 +24,14 @@ def fetch_all_feeds():
     logger.info("Starting RSS fetch...")
     db = SessionLocal()
 
+    # Only accept articles published within the last 24 hours
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+
     try:
         # Get all existing titles to check for duplicates
         existing_titles = [a.title for a in db.query(Article.title).all()]
         new_count = 0
+        skipped_old = 0
 
         for source in SOURCES:
             logger.info(f"Fetching: {source['name']}...")
@@ -50,10 +54,16 @@ def fetch_all_feeds():
                     if exists:
                         continue
 
-                    # Get published date
+                    # Get published date — always store as UTC-aware datetime
                     published_at = None
                     if hasattr(entry, "published_parsed") and entry.published_parsed:
-                        published_at = datetime(*entry.published_parsed[:6])
+                        # feedparser returns UTC time tuples; make it timezone-aware
+                        published_at = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
+
+                    # Skip articles older than 24 hours
+                    if published_at and published_at < cutoff:
+                        skipped_old += 1
+                        continue
 
                     # Get image — first try RSS feed itself
                     image_url = None
@@ -84,7 +94,7 @@ def fetch_all_feeds():
                 continue
 
         db.commit()
-        logger.info(f"Fetch complete! {new_count} new articles saved.")
+        logger.info(f"Fetch complete! {new_count} new articles saved. ({skipped_old} skipped — older than 24h)")
 
     except Exception as e:
         logger.error(f"Fatal error during fetch: {e}")

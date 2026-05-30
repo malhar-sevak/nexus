@@ -98,8 +98,8 @@ def get_articles(
                 "category":     a.source_category,
                 "summary":      a.summary,
                 "image_url":    a.image_url,
-                "published_at": a.published_at,
-                "fetched_at":   a.fetched_at,
+                "published_at": format_dt(a.published_at),
+                "fetched_at":   a.fetched_at.isoformat() if a.fetched_at else None,
             }
             for a in articles
         ]
@@ -150,7 +150,7 @@ def get_digest(db: Session = Depends(get_db)):
                 "summary":     a.summary,
                 "image_url":   a.image_url,
                 "published_at": format_dt(a.published_at),
-                "fetched_at":   format_dt(a.fetched_at),
+                "fetched_at":   a.fetched_at.isoformat() if a.fetched_at else None,
             }
             for a in articles
         ]

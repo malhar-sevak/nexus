@@ -73,7 +73,7 @@ def get_stats(db: Session = Depends(get_db), _=Depends(require_auth)):
     total_sources   = db.query(Article.source_name).distinct().count()
 
     latest_article  = db.query(Article).order_by(desc(Article.fetched_at)).first()
-    last_fetch      = latest_article.fetched_at.isoformat() + "Z" if latest_article and latest_article.fetched_at else None
+    last_fetch      = latest_article.fetched_at.isoformat() if latest_article and latest_article.fetched_at else None
 
     # Category breakdown
     cat_counts = db.query(
@@ -108,7 +108,7 @@ def get_sources_admin(db: Session = Depends(get_db), _=Depends(require_auth)):
                 "name":          s.source_name,
                 "category":      s.source_category,
                 "article_count": s.article_count,
-                "last_fetched":  s.last_fetched.isoformat() + "Z" if s.last_fetched else None,
+                "last_fetched":  s.last_fetched.isoformat() if s.last_fetched else None,
             }
             for s in sources
         ]
