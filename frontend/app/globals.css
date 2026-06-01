@@ -1,17 +1,63 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
 @import "tailwindcss";
 
-:root {
-  --bg: #07090f;
-  --card: #0d1117;
-  --border: #1c2333;
-  --accent: #00d4ff;
-  --accent2: #4f46e5;
-  --text: #cdd9e5;
-  --muted: #444c56;
-  --card-hover: #111827;
+/* ─── Dark Mode (default) ─────────────────────────────────────── */
+:root,
+[data-theme="dark"] {
+  --bg:          #07090f;
+  --card:        #0d1117;
+  --card-2:      #090d16;
+  --card-hover:  #111827;
+  --card-hover-2:#0d1117;
+  --border:      #1c2333;
+  --border-dim:  #1c2333;
+  --accent:      #00d4ff;
+  --accent2:     #4f46e5;
+  --text:        #cdd9e5;
+  --text-sub:    #8b98a9;   /* ← was #444c56 (too dim). Now clearly readable */
+  --text-dim:    #444c56;   /* For decorative/very secondary items */
+  --muted:       #444c56;
+  --num-color:   #1c2333;
+  --select-bg:   #0d1117;
+  --select-opt:  #0d1117;
+  --shadow-glow: rgba(0, 212, 255, 0.08);
+  --nav-bg:      rgba(7, 9, 15, 0.95);
+  --scrollbar-track: #07090f;
+  color-scheme:  dark;
 }
 
+/* ─── Light Mode ──────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg:          #cdc9c1;   /* warm stone — clearly not white */
+  --card:        #dad6ce;   /* slightly lighter stone */
+  --card-2:      #c8c4bc;   /* slightly deeper for sidebar */
+  --card-hover:  #c8c4bc;
+  --card-hover-2:#c4c0b8;
+  --border:      #b5b0a7;
+  --border-dim:  #bfbbb3;
+  --accent:      #0088bb;   /* slightly deeper cyan for contrast on gray */
+  --accent2:     #4f46e5;
+  --text:        #1a1814;   /* near-black warm */
+  --text-sub:    #3d3a34;   /* dark warm gray — clearly readable */
+  --text-dim:    #6b665e;
+  --muted:       #6b665e;
+  --num-color:   #a09b93;
+  --select-bg:   #dad6ce;
+  --select-opt:  #dad6ce;
+  --shadow-glow: rgba(0, 136, 187, 0.12);
+  --nav-bg:      rgba(205, 201, 193, 0.97);
+  --scrollbar-track: #cdc9c1;
+  color-scheme:  light;
+}
+
+/* ─── Theme transition (smooth) ──────────────────────────────── */
+*,
+*::before,
+*::after {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* ─── Reset ───────────────────────────────────────────────────── */
 * {
   margin: 0;
   padding: 0;
@@ -25,12 +71,13 @@ body {
   min-height: 100vh;
 }
 
+/* ─── Scrollbar ───────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg);
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -38,12 +85,12 @@ body {
   border-radius: 2px;
 }
 
+/* ─── Animations ──────────────────────────────────────────────── */
 @keyframes fadeUp {
   from {
     opacity: 0;
     transform: translateY(20px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -51,15 +98,13 @@ body {
 }
 
 @keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
 
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.3;
-  }
+@keyframes theme-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 .fade-up {
@@ -76,6 +121,7 @@ body {
   opacity: 0;
 }
 
+/* ─── Utility classes ─────────────────────────────────────────── */
 .live-dot {
   width: 7px;
   height: 7px;
@@ -92,7 +138,7 @@ body {
 .card-hover:hover {
   transform: translateY(-4px);
   border-color: var(--accent) !important;
-  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.08);
+  box-shadow: 0 8px 32px var(--shadow-glow);
 }
 
 .font-display {
@@ -101,4 +147,33 @@ body {
 
 .font-mono {
   font-family: 'Space Mono', monospace;
+}
+
+/* ─── Theme Toggle button ─────────────────────────────────────── */
+.theme-toggle {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text-sub);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+  transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.2s;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  transform: rotate(15deg);
+}
+
+/* Prevent transition flicker on initial theme load */
+.no-transition * {
+  transition: none !important;
 }

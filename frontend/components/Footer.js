@@ -3,10 +3,10 @@ import Link from "next/link";
 export default function Footer() {
     return (
         <footer style={{
-            borderTop: "1px solid #1c2333",
+            borderTop: "1px solid var(--border)",
             marginTop: "80px",
             padding: "24px",
-            background: "#07090f",
+            background: "var(--bg)",
         }}>
             <div style={{
                 maxWidth: "1280px",
@@ -30,7 +30,7 @@ export default function Footer() {
                     }}>N</div>
                     <span style={{
                         fontFamily: "'Syne', sans-serif", fontWeight: "800",
-                        color: "#cdd9e5", fontSize: "16px",
+                        color: "var(--text)", fontSize: "16px",
                     }}>NEXUS</span>
                 </div>
 
@@ -40,13 +40,13 @@ export default function Footer() {
                         { label: "Sources", href: "/sources" },
                     ].map(({ label, href }) => (
                         <Link key={label} href={href} style={{
-                            color: "#444c56", fontSize: "12px",
+                            color: "var(--text-sub)", fontSize: "12px",
                             textDecoration: "none",
                             fontFamily: "'DM Sans', sans-serif",
                             transition: "color 0.2s",
                         }}
-                            onMouseEnter={e => e.target.style.color = "#00d4ff"}
-                            onMouseLeave={e => e.target.style.color = "#444c56"}
+                            onMouseEnter={e => e.target.style.color = "var(--accent)"}
+                            onMouseLeave={e => e.target.style.color = "var(--text-sub)"}
                         >{label}</Link>
                     ))}
                 </div>
@@ -54,16 +54,16 @@ export default function Footer() {
                 {/* Right — Credit + Copyright */}
                 <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
                     <p style={{
-                        color: "#1c2333", fontSize: "11px",
+                        color: "var(--text-dim)", fontSize: "11px",
                         fontFamily: "'Space Mono', monospace",
                     }}>© 2026 NEXUS</p>
                     <p style={{
                         fontSize: "11px",
                         fontFamily: "'Space Mono', monospace",
-                        color: "#444c56",
+                        color: "var(--text-sub)",
                     }}>
                         DEVELOPED BY{" "}
-                        <span style={{ color: "#00d4ff", fontWeight: "700" }}>
+                        <span style={{ color: "var(--accent)", fontWeight: "700" }}>
                             MALHAR SEVAK
                         </span>
                     </p>

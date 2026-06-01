@@ -26,7 +26,6 @@ export default function ArticleFeed({
     const [query, setQuery]             = useState("");
     const [page, setPage]               = useState(1);
     const [total, setTotal]             = useState(initialTotal);
-    // Start as false — we already have server-side articles
     const [loading, setLoading]         = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore]         = useState(initialArticles.length === 20);
@@ -35,10 +34,8 @@ export default function ArticleFeed({
 
     const observerRef   = useRef(null);
     const sentinelRef   = useRef(null);
-    // Skip the very first fetch — we already have server-rendered data
     const skipFirstFetch = useRef(true);
 
-    // If any filter/sort changes, re-enable fetching and reset
     useEffect(() => {
         skipFirstFetch.current = false;
         setArticles([]);
@@ -47,7 +44,6 @@ export default function ArticleFeed({
     }, [selectedCat, selectedSource, query, sortBy]);
 
     const fetchArticles = useCallback(async (pageNum) => {
-        // Skip initial mount fetch — server already gave us the first page
         if (skipFirstFetch.current && pageNum === 1) {
             skipFirstFetch.current = false;
             return;
@@ -98,7 +94,7 @@ export default function ArticleFeed({
     const handleSearch         = ()    => setQuery(search);
 
     return (
-        <div style={{ minHeight: "100vh", background: "#07090f", display: "flex", flexDirection: "column" }}>
+        <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
             <Navbar search={search} setSearch={setSearch} onSearch={handleSearch} />
 
             <div style={{ display: "flex", flex: 1, position: "relative", alignItems: "stretch" }}>
@@ -122,7 +118,7 @@ export default function ArticleFeed({
                         <HeroCarousel total={total} />
 
                         <div style={{
-                            fontSize: "11px", color: "#2a2a3e",
+                            fontSize: "11px", color: "var(--text-dim)",
                             fontFamily: "'Space Mono', monospace",
                             marginBottom: "20px",
                         }}>
@@ -133,13 +129,13 @@ export default function ArticleFeed({
                             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
                                 {[...Array(8)].map((_, i) => (
                                     <div key={i} style={{
-                                        background: "#0d1117", border: "1px solid #1c2333",
+                                        background: "var(--card)", border: "1px solid var(--border)",
                                         borderRadius: "16px", height: "320px", opacity: 0.5,
                                     }} />
                                 ))}
                             </div>
                         ) : articles.length === 0 ? (
-                            <div style={{ textAlign: "center", padding: "80px 0", color: "#2a2a3e" }}>
+                            <div style={{ textAlign: "center", padding: "80px 0", color: "var(--text-dim)" }}>
                                 <div style={{ fontSize: "48px", marginBottom: "16px" }}>◎</div>
                                 <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "13px" }}>
                                     NO ARTICLES FOUND
@@ -158,14 +154,14 @@ export default function ArticleFeed({
                                 {loadingMore && (
                                     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", padding: "20px 0" }}>
                                         <span className="live-dot" />
-                                        <span style={{ fontSize: "11px", color: "#444c56", fontFamily: "'Space Mono', monospace" }}>
+                                        <span style={{ fontSize: "11px", color: "var(--text-sub)", fontFamily: "'Space Mono', monospace" }}>
                                             LOADING MORE...
                                         </span>
                                     </div>
                                 )}
 
                                 {!hasMore && articles.length > 0 && (
-                                    <div style={{ textAlign: "center", padding: "32px 0", color: "#1c2333", fontSize: "11px", fontFamily: "'Space Mono', monospace" }}>
+                                    <div style={{ textAlign: "center", padding: "32px 0", color: "var(--text-dim)", fontSize: "11px", fontFamily: "'Space Mono', monospace" }}>
                                         — END OF FEED —
                                     </div>
                                 )}

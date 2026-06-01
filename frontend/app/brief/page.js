@@ -7,13 +7,13 @@ import { getDigest } from "../../lib/api";
 import { format } from "date-fns";
 
 const CATEGORY_STYLES = {
-    LLMs: { color: "#00d4ff" },
-    Vision: { color: "#60a5fa" },
-    Robotics: { color: "#fb923c" },
-    Research: { color: "#4ade80" },
-    Tools: { color: "#fbbf24" },
-    Industry: { color: "#f87171" },
-    Community: { color: "#c084fc" },
+    LLMs:       { color: "#00d4ff" },
+    Vision:     { color: "#60a5fa" },
+    Robotics:   { color: "#fb923c" },
+    Research:   { color: "#4ade80" },
+    Tools:      { color: "#fbbf24" },
+    Industry:   { color: "#f87171" },
+    Community:  { color: "#c084fc" },
     Newsletter: { color: "#818cf8" },
 };
 
@@ -35,32 +35,32 @@ export default function BriefPage() {
     const editionNum = digest?.id || 1;
 
     return (
-        <div style={{ minHeight: "100vh", background: "#07090f" }}>
+        <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
             <Navbar search={search} setSearch={setSearch} onSearch={() => { }} />
 
             <main style={{ maxWidth: "860px", margin: "0 auto", padding: "48px 24px" }}>
 
                 {loading ? (
                     <div style={{
-                        background: "#0d1117", border: "1px solid #1c2333",
+                        background: "var(--card)", border: "1px solid var(--border)",
                         borderRadius: "16px", height: "400px",
                         display: "flex", alignItems: "center", justifyContent: "center",
                     }}>
-                        <span style={{ color: "#444c56", fontFamily: "'Space Mono', monospace", fontSize: "12px" }}>
+                        <span style={{ color: "var(--text-sub)", fontFamily: "'Space Mono', monospace", fontSize: "12px" }}>
                             Loading The Brief...
                         </span>
                     </div>
 
                 ) : !digest || digest.message ? (
                     <div style={{
-                        background: "#0d1117", border: "1px solid #1c2333",
+                        background: "var(--card)", border: "1px solid var(--border)",
                         borderRadius: "16px", padding: "64px", textAlign: "center",
                     }}>
-                        <div style={{ fontSize: "40px", marginBottom: "16px", color: "#1c2333" }}>◎</div>
-                        <p style={{ color: "#444c56", fontFamily: "'Space Mono', monospace", fontSize: "13px" }}>
+                        <div style={{ fontSize: "40px", marginBottom: "16px", color: "var(--border)" }}>◎</div>
+                        <p style={{ color: "var(--text-sub)", fontFamily: "'Space Mono', monospace", fontSize: "13px" }}>
                             NO BRIEF YET — CHECK BACK SOON
                         </p>
-                        <p style={{ color: "#1c2333", fontSize: "12px", marginTop: "8px" }}>
+                        <p style={{ color: "var(--text-dim)", fontSize: "12px", marginTop: "8px" }}>
                             The Brief is generated daily at midnight
                         </p>
                     </div>
@@ -70,30 +70,30 @@ export default function BriefPage() {
                         {/* Newspaper Header */}
                         <div style={{
                             textAlign: "center",
-                            borderTop: "2px solid #cdd9e5",
-                            borderBottom: "2px solid #cdd9e5",
+                            borderTop: "2px solid var(--text)",
+                            borderBottom: "2px solid var(--text)",
                             padding: "12px 0", marginBottom: "32px",
                         }} className="fade-up">
                             <div style={{
                                 display: "flex", alignItems: "center",
                                 justifyContent: "space-between", marginBottom: "8px",
                             }}>
-                                <span style={{ fontSize: "10px", color: "#444c56", fontFamily: "'Space Mono', monospace" }}>
+                                <span style={{ fontSize: "10px", color: "var(--text-sub)", fontFamily: "'Space Mono', monospace" }}>
                                     {format(new Date(digest.date), "EEEE, MMMM d, yyyy").toUpperCase()}
                                 </span>
-                                <span style={{ fontSize: "10px", color: "#444c56", fontFamily: "'Space Mono', monospace" }}>
+                                <span style={{ fontSize: "10px", color: "var(--text-sub)", fontFamily: "'Space Mono', monospace" }}>
                                     EDITION #{String(editionNum).padStart(3, "0")}
                                 </span>
                             </div>
                             <h1 style={{
                                 fontFamily: "'Syne', sans-serif", fontWeight: "800",
                                 fontSize: "clamp(28px, 5vw, 48px)",
-                                color: "#cdd9e5", letterSpacing: "0.04em", lineHeight: 1,
+                                color: "var(--text)", letterSpacing: "0.04em", lineHeight: 1,
                             }}>
                                 THE NEXUS BRIEF
                             </h1>
                             <div style={{
-                                fontSize: "10px", color: "#444c56",
+                                fontSize: "10px", color: "var(--text-sub)",
                                 fontFamily: "'Space Mono', monospace",
                                 marginTop: "8px", letterSpacing: "0.1em",
                             }}>
@@ -104,11 +104,11 @@ export default function BriefPage() {
                         {/* Lead Story */}
                         {leadArticle && (
                             <div style={{
-                                background: "#0d1117", border: "1px solid #1c2333",
+                                background: "var(--card)", border: "1px solid var(--border)",
                                 borderRadius: "16px", overflow: "hidden", marginBottom: "32px",
                             }} className="fade-up-delay-1">
 
-                                <div style={{ position: "relative", width: "100%", height: "280px", background: "#111827", overflow: "hidden" }}>
+                                <div style={{ position: "relative", width: "100%", height: "280px", background: "var(--card-hover)", overflow: "hidden" }}>
                                     <img
                                         src={leadArticle.image_url || ""}
                                         alt={leadArticle.title}
@@ -125,11 +125,11 @@ export default function BriefPage() {
                                     />
                                     <div style={{
                                         position: "absolute", inset: 0,
-                                        background: "linear-gradient(to top, #0d1117 0%, transparent 60%)",
+                                        background: "linear-gradient(to top, var(--card) 0%, transparent 60%)",
                                     }} />
                                     <div style={{
                                         position: "absolute", top: "16px", left: "16px",
-                                        background: "#00d4ff", color: "#07090f",
+                                        background: "var(--accent)", color: "#07090f",
                                         fontSize: "10px", fontFamily: "'Space Mono', monospace",
                                         fontWeight: "700", padding: "4px 12px", borderRadius: "6px",
                                         letterSpacing: "0.08em",
@@ -142,27 +142,27 @@ export default function BriefPage() {
                                     <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
                                         <span style={{
                                             fontSize: "10px", fontFamily: "'Space Mono', monospace",
-                                            color: CATEGORY_STYLES[leadArticle.category]?.color || "#00d4ff",
+                                            color: CATEGORY_STYLES[leadArticle.category]?.color || "var(--accent)",
                                             fontWeight: "700",
                                         }}>
                                             {leadArticle.category || "GENERAL"}
                                         </span>
-                                        <span style={{ color: "#1c2333", fontSize: "10px" }}>·</span>
-                                        <span style={{ fontSize: "10px", color: "#444c56", fontFamily: "'Space Mono', monospace" }}>
+                                        <span style={{ color: "var(--border)", fontSize: "10px" }}>·</span>
+                                        <span style={{ fontSize: "10px", color: "var(--text-sub)", fontFamily: "'Space Mono', monospace" }}>
                                             {leadArticle.source_name}
                                         </span>
                                     </div>
 
                                     <h2 style={{
                                         fontFamily: "'Syne', sans-serif", fontWeight: "800",
-                                        fontSize: "22px", color: "#cdd9e5",
+                                        fontSize: "22px", color: "var(--text)",
                                         lineHeight: "1.3", marginBottom: "12px",
                                     }}>
                                         {leadArticle.title}
                                     </h2>
 
                                     <p style={{
-                                        color: "#8b95a3", fontSize: "14px",
+                                        color: "var(--text-sub)", fontSize: "14px",
                                         lineHeight: "1.8", marginBottom: "20px",
                                         fontFamily: "'DM Sans', sans-serif",
                                     }}>
@@ -171,7 +171,7 @@ export default function BriefPage() {
 
                                     <a href={leadArticle.url} target="_blank" rel="noopener noreferrer" style={{
                                         display: "inline-flex", alignItems: "center", gap: "8px",
-                                        background: "#00d4ff", color: "#07090f",
+                                        background: "var(--accent)", color: "#07090f",
                                         padding: "10px 20px", borderRadius: "10px",
                                         fontSize: "12px", fontFamily: "'Space Mono', monospace",
                                         fontWeight: "700", textDecoration: "none", transition: "opacity 0.2s",
@@ -200,10 +200,10 @@ export default function BriefPage() {
                                         fontSize: "13px", color: "#07090f", flexShrink: 0,
                                     }}>N</div>
                                     <div>
-                                        <div style={{ fontSize: "13px", fontWeight: "600", color: "#cdd9e5", fontFamily: "'Syne', sans-serif" }}>
+                                        <div style={{ fontSize: "13px", fontWeight: "600", color: "var(--text)", fontFamily: "'Syne', sans-serif" }}>
                                             Nexus AI
                                         </div>
-                                        <div style={{ fontSize: "10px", color: "#444c56", fontFamily: "'Space Mono', monospace" }}>
+                                        <div style={{ fontSize: "10px", color: "var(--text-sub)", fontFamily: "'Space Mono', monospace" }}>
                                             Also today — a thread
                                         </div>
                                     </div>
@@ -214,7 +214,7 @@ export default function BriefPage() {
                                     {threadItems.map((article, i) => {
                                         const isLast = i === threadItems.length - 1;
                                         const isExpanded = expanded === i;
-                                        const catColor = CATEGORY_STYLES[article.category]?.color || "#00d4ff";
+                                        const catColor = CATEGORY_STYLES[article.category]?.color || "var(--accent)";
 
                                         return (
                                             <div key={article.id} style={{ display: "flex", gap: "16px" }}>
@@ -223,7 +223,7 @@ export default function BriefPage() {
                                                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
                                                     <div style={{
                                                         width: "32px", height: "32px",
-                                                        background: "#0d1117",
+                                                        background: "var(--card)",
                                                         border: `1px solid ${catColor}44`,
                                                         borderRadius: "50%",
                                                         display: "flex", alignItems: "center", justifyContent: "center",
@@ -233,15 +233,15 @@ export default function BriefPage() {
                                                         {i + 2}
                                                     </div>
                                                     {!isLast && (
-                                                        <div style={{ width: "1px", flex: 1, background: "#1c2333", minHeight: "24px" }} />
+                                                        <div style={{ width: "1px", flex: 1, background: "var(--border)", minHeight: "24px" }} />
                                                     )}
                                                 </div>
 
                                                 {/* Thread content with thumbnail */}
                                                 <div style={{
                                                     flex: 1,
-                                                    background: "#0d1117",
-                                                    border: "1px solid #1c2333",
+                                                    background: "var(--card)",
+                                                    border: "1px solid var(--border)",
                                                     borderRadius: "12px",
                                                     padding: "16px",
                                                     marginBottom: isLast ? "0" : "12px",
@@ -258,25 +258,25 @@ export default function BriefPage() {
                                                                 }}>
                                                                     {article.category || "GENERAL"}
                                                                 </span>
-                                                                <span style={{ fontSize: "10px", color: "#444c56", fontFamily: "'Space Mono', monospace" }}>
+                                                                <span style={{ fontSize: "10px", color: "var(--text-sub)", fontFamily: "'Space Mono', monospace" }}>
                                                                     · {article.source_name}
                                                                 </span>
                                                             </div>
-                                                            <span style={{ fontSize: "10px", color: "#444c56", fontFamily: "'Space Mono', monospace" }}>
+                                                            <span style={{ fontSize: "10px", color: "var(--text-sub)", fontFamily: "'Space Mono', monospace" }}>
                                                                 {i + 2}/{threadItems.length + 1}
                                                             </span>
                                                         </div>
 
                                                         <h3 style={{
                                                             fontFamily: "'Syne', sans-serif", fontWeight: "700",
-                                                            fontSize: "14px", color: "#cdd9e5",
+                                                            fontSize: "14px", color: "var(--text)",
                                                             lineHeight: "1.4", marginBottom: "8px",
                                                         }}>
                                                             {article.title}
                                                         </h3>
 
                                                         <p style={{
-                                                            color: "#444c56", fontSize: "13px",
+                                                            color: "var(--text-sub)", fontSize: "13px",
                                                             lineHeight: "1.7", fontFamily: "'DM Sans', sans-serif",
                                                             display: isExpanded ? "block" : "-webkit-box",
                                                             WebkitLineClamp: 2,
@@ -290,7 +290,7 @@ export default function BriefPage() {
                                                             {article.summary && article.summary.length > 100 && (
                                                                 <button onClick={() => setExpanded(isExpanded ? null : i)} style={{
                                                                     background: "none", border: "none",
-                                                                    color: "#444c56", fontSize: "11px",
+                                                                    color: "var(--text-sub)", fontSize: "11px",
                                                                     fontFamily: "'Space Mono', monospace",
                                                                     cursor: "pointer", padding: "0",
                                                                 }}>
@@ -298,7 +298,7 @@ export default function BriefPage() {
                                                                 </button>
                                                             )}
                                                             <a href={article.url} target="_blank" rel="noopener noreferrer" style={{
-                                                                color: "#00d4ff", fontSize: "11px",
+                                                                color: "var(--accent)", fontSize: "11px",
                                                                 fontFamily: "'Space Mono', monospace",
                                                                 textDecoration: "none",
                                                             }}>Read more →</a>
@@ -310,7 +310,7 @@ export default function BriefPage() {
                                                         <div style={{
                                                             width: "80px", height: "80px", flexShrink: 0,
                                                             borderRadius: "8px", overflow: "hidden",
-                                                            background: "#111827",
+                                                            background: "var(--card-hover)",
                                                         }}>
                                                             <img
                                                                 src={article.image_url}
@@ -329,13 +329,13 @@ export default function BriefPage() {
                                 {/* Thread end */}
                                 <div style={{
                                     marginTop: "24px", textAlign: "center",
-                                    padding: "16px", border: "1px solid #1c2333",
-                                    borderRadius: "12px", background: "#0d1117",
+                                    padding: "16px", border: "1px solid var(--border)",
+                                    borderRadius: "12px", background: "var(--card)",
                                 }}>
-                                    <p style={{ color: "#444c56", fontSize: "12px", fontFamily: "'Space Mono', monospace" }}>
+                                    <p style={{ color: "var(--text-sub)", fontSize: "12px", fontFamily: "'Space Mono', monospace" }}>
                                         That's your brief for today. Check back tomorrow for the next edition.
                                     </p>
-                                    <p style={{ color: "#1c2333", fontSize: "11px", marginTop: "4px", fontFamily: "'Space Mono', monospace" }}>
+                                    <p style={{ color: "var(--text-dim)", fontSize: "11px", marginTop: "4px", fontFamily: "'Space Mono', monospace" }}>
                                         — Nexus AI Editor
                                     </p>
                                 </div>

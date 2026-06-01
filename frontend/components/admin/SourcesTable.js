@@ -149,7 +149,7 @@ export default function SourcesTable() {
                         const catColor = CAT_COLORS[source.category] || "#444c56";
                         return (
                             <div
-                                key={source.name}
+                                key={`${source.name}-${i}`}
                                 style={{
                                     display: "grid",
                                     gridTemplateColumns: "2fr 1fr 100px 100px",

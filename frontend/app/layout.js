@@ -1,5 +1,6 @@
 import "./globals.css";
 import PageTransition from "../components/PageTransition";
+import { ThemeProvider } from "../lib/ThemeContext";
 
 export const metadata = {
     metadataBase: new URL("https://nexus-ai.vercel.app"), // update with your real domain
@@ -44,16 +45,35 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
     return (
-        <html lang="en">
+        <html lang="en" data-theme="dark" suppressHydrationWarning>
             <head>
                 {/* Preconnect to Google Fonts for faster loading */}
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
+                {/* Inline script: apply saved theme BEFORE first paint to avoid flash */}
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `
+                            (function() {
+                                try {
+                                    var saved = localStorage.getItem('nexus-theme');
+                                    var theme = (saved === 'light' || saved === 'dark')
+                                        ? saved
+                                        : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+                                    document.documentElement.setAttribute('data-theme', theme);
+                                } catch(e) {}
+                            })();
+                        `,
+                    }}
+                />
             </head>
             <body>
-                <PageTransition>
-                    {children}
-                </PageTransition>
+                <ThemeProvider>
+                    <PageTransition>
+                        {children}
+                    </PageTransition>
+                </ThemeProvider>
             </body>
         </html>
     );

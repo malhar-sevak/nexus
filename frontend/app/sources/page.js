@@ -14,59 +14,57 @@ const CATEGORY_ORDER = [
 ];
 
 const CATEGORY_LABELS = {
-    Industry: "Official Blogs & Tech Media",
-    Research: "Research",
-    Community: "Community",
-    LLMs: "LLMs",
-    Tools: "Tools",
+    Industry:   "Official Blogs & Tech Media",
+    Research:   "Research",
+    Community:  "Community",
+    LLMs:       "LLMs",
+    Tools:      "Tools",
     Newsletter: "Newsletters",
 };
 
 const CATEGORY_COLORS = {
-    Industry: { color: "#f87171", bg: "#1a0a0a", border: "#f8717133" },
-    Research: { color: "#4ade80", bg: "#0a1a0a", border: "#4ade8033" },
-    Community: { color: "#c084fc", bg: "#160a1a", border: "#c084fc33" },
-    LLMs: { color: "#00d4ff", bg: "#0a1929", border: "#00d4ff33" },
-    Tools: { color: "#fbbf24", bg: "#1a1500", border: "#fbbf2433" },
-    Newsletter: { color: "#818cf8", bg: "#0d0d1a", border: "#818cf833" },
+    Industry:   { color: "#f87171",  bg: "#1a0a0a", border: "#f8717133" },
+    Research:   { color: "#4ade80",  bg: "#0a1a0a", border: "#4ade8033" },
+    Community:  { color: "#c084fc",  bg: "#160a1a", border: "#c084fc33" },
+    LLMs:       { color: "#00d4ff",  bg: "#0a1929", border: "#00d4ff33" },
+    Tools:      { color: "#fbbf24",  bg: "#1a1500", border: "#fbbf2433" },
+    Newsletter: { color: "#818cf8",  bg: "#0d0d1a", border: "#818cf833" },
 };
 
 const SOURCE_URLS = {
-    "OpenAI": "https://openai.com/blog",
-    "Google DeepMind": "https://deepmind.google/blog",
-    "Hugging Face": "https://huggingface.co/blog",
-    "Meta AI": "https://ai.meta.com/blog",
-    "TechCrunch AI": "https://techcrunch.com/category/artificial-intelligence",
-    "The Verge AI": "https://www.theverge.com/ai-artificial-intelligence",
-    "VentureBeat AI": "https://venturebeat.com/category/ai",
-    "Wired AI": "https://www.wired.com/tag/artificial-intelligence",
-    "ArXiv AI": "https://arxiv.org/list/cs.AI/recent",
-    "ArXiv ML": "https://arxiv.org/list/cs.LG/recent",
-    "IEEE Spectrum AI": "https://spectrum.ieee.org/topic/artificial-intelligence",
-    "Anthropic Community": "https://community.anthropic.com",
-    "Reddit MachineLearning": "https://www.reddit.com/r/MachineLearning",
-    "Reddit LocalLLaMA": "https://www.reddit.com/r/LocalLLaMA",
-    "Reddit Artificial": "https://www.reddit.com/r/artificial",
-    "Hacker News AI": "https://news.ycombinator.com",
-    "Yannic Kilcher": "https://www.youtube.com/@YannicKilcher",
-    "Two Minute Papers": "https://www.youtube.com/@TwoMinutePapers",
-    "TLDR AI": "https://tldr.tech/ai",
+    "OpenAI":                "https://openai.com/blog",
+    "Google DeepMind":       "https://deepmind.google/blog",
+    "Hugging Face":          "https://huggingface.co/blog",
+    "Meta AI":               "https://ai.meta.com/blog",
+    "TechCrunch AI":         "https://techcrunch.com/category/artificial-intelligence",
+    "The Verge AI":          "https://www.theverge.com/ai-artificial-intelligence",
+    "VentureBeat AI":        "https://venturebeat.com/category/ai",
+    "Wired AI":              "https://www.wired.com/tag/artificial-intelligence",
+    "ArXiv AI":              "https://arxiv.org/list/cs.AI/recent",
+    "ArXiv ML":              "https://arxiv.org/list/cs.LG/recent",
+    "IEEE Spectrum AI":      "https://spectrum.ieee.org/topic/artificial-intelligence",
+    "Anthropic Community":   "https://community.anthropic.com",
+    "Reddit MachineLearning":"https://www.reddit.com/r/MachineLearning",
+    "Reddit LocalLLaMA":     "https://www.reddit.com/r/LocalLLaMA",
+    "Reddit Artificial":     "https://www.reddit.com/r/artificial",
+    "Hacker News AI":        "https://news.ycombinator.com",
+    "Yannic Kilcher":        "https://www.youtube.com/@YannicKilcher",
+    "Two Minute Papers":     "https://www.youtube.com/@TwoMinutePapers",
+    "TLDR AI":               "https://tldr.tech/ai",
 };
 
 export default function SourcesPage() {
-    const [sources, setSources] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState("");
-    const [total, setTotal] = useState(0);
+    const [sources, setSources]       = useState([]);
+    const [loading, setLoading]       = useState(true);
+    const [search, setSearch]         = useState("");
+    const [total, setTotal]           = useState(0);
     const [uniqueCount, setUniqueCount] = useState(0);
 
     useEffect(() => {
         getSourcesDetail()
             .then(data => {
                 setSources(data.sources);
-                // Total articles fetched
                 setTotal(data.sources.reduce((sum, s) => sum + s.article_count, 0));
-                // Unique source names only
                 const unique = new Set(data.sources.map(s => s.name));
                 setUniqueCount(unique.size);
             })
@@ -82,7 +80,7 @@ export default function SourcesPage() {
     }, {});
 
     return (
-        <div style={{ minHeight: "100vh", background: "#07090f" }}>
+        <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
             <Navbar search={search} setSearch={setSearch} onSearch={() => { }} />
 
             <main style={{ maxWidth: "1280px", margin: "0 auto", padding: "48px 24px" }}>
@@ -91,25 +89,25 @@ export default function SourcesPage() {
                 <div style={{ marginBottom: "48px" }} className="fade-up">
                     <div style={{
                         display: "inline-flex", alignItems: "center", gap: "8px",
-                        background: "rgba(0,212,255,0.08)",
-                        border: "1px solid rgba(0,212,255,0.2)",
+                        background: "color-mix(in srgb, var(--accent) 8%, transparent)",
+                        border: "1px solid color-mix(in srgb, var(--accent) 20%, transparent)",
                         borderRadius: "100px", padding: "4px 14px", marginBottom: "20px",
                     }}>
                         <span className="live-dot" />
-                        <span style={{ fontSize: "11px", color: "#00d4ff", fontFamily: "'Space Mono', monospace" }}>
+                        <span style={{ fontSize: "11px", color: "var(--accent)", fontFamily: "'Space Mono', monospace" }}>
                             {sources.length} SOURCES ACTIVE
                         </span>
                     </div>
 
                     <h1 style={{
                         fontFamily: "'Syne', sans-serif", fontWeight: "800",
-                        fontSize: "clamp(28px, 4vw, 48px)", color: "#cdd9e5",
+                        fontSize: "clamp(28px, 4vw, 48px)", color: "var(--text)",
                         lineHeight: "1.15", marginBottom: "12px",
                     }}>
-                        Where we get our <span style={{ color: "#00d4ff" }}>news from.</span>
+                        Where we get our <span style={{ color: "var(--accent)" }}>news from.</span>
                     </h1>
                     <p style={{
-                        color: "#444c56", fontSize: "14px",
+                        color: "var(--text-sub)", fontSize: "14px",
                         fontFamily: "'DM Sans', sans-serif", maxWidth: "480px",
                     }}>
                         Nexus pulls from {sources.length} trusted sources across AI, ML and tech —
@@ -124,19 +122,19 @@ export default function SourcesPage() {
                     gap: "12px", marginBottom: "48px",
                 }} className="fade-up-delay-1">
                     {[
-                        { label: "Total Sources", value: uniqueCount },
-                        { label: "Articles Fetched", value: total.toLocaleString() },
-                        { label: "Categories", value: Object.keys(grouped).length },
-                        { label: "Update Frequency", value: "Every 1hr" },
+                        { label: "Total Sources",     value: uniqueCount },
+                        { label: "Articles Fetched",  value: total.toLocaleString() },
+                        { label: "Categories",        value: Object.keys(grouped).length },
+                        { label: "Update Frequency",  value: "Every 1hr" },
                     ].map(({ label, value }) => (
                         <div key={label} style={{
-                            background: "#0d1117", border: "1px solid #1c2333",
+                            background: "var(--card)", border: "1px solid var(--border)",
                             borderRadius: "12px", padding: "16px 20px",
                         }}>
-                            <div style={{ fontSize: "10px", color: "#444c56", fontFamily: "'Space Mono', monospace", marginBottom: "8px" }}>
+                            <div style={{ fontSize: "10px", color: "var(--text-sub)", fontFamily: "'Space Mono', monospace", marginBottom: "8px" }}>
                                 {label.toUpperCase()}
                             </div>
-                            <div style={{ fontSize: "24px", fontWeight: "700", color: "#00d4ff", fontFamily: "'Syne', sans-serif" }}>
+                            <div style={{ fontSize: "24px", fontWeight: "700", color: "var(--accent)", fontFamily: "'Syne', sans-serif" }}>
                                 {value}
                             </div>
                         </div>
@@ -151,7 +149,7 @@ export default function SourcesPage() {
                     }}>
                         {[...Array(6)].map((_, i) => (
                             <div key={i} style={{
-                                background: "#0d1117", border: "1px solid #1c2333",
+                                background: "var(--card)", border: "1px solid var(--border)",
                                 borderRadius: "12px", height: "120px", opacity: 0.5,
                             }} />
                         ))}
@@ -177,8 +175,8 @@ export default function SourcesPage() {
                                     }}>
                                         {CATEGORY_LABELS[category] || category.toUpperCase()}
                                     </span>
-                                    <div style={{ flex: 1, height: "1px", background: "#1c2333" }} />
-                                    <span style={{ fontSize: "10px", color: "#1c2333", fontFamily: "'Space Mono', monospace" }}>
+                                    <div style={{ flex: 1, height: "1px", background: "var(--border)" }} />
+                                    <span style={{ fontSize: "10px", color: "var(--text-dim)", fontFamily: "'Space Mono', monospace" }}>
                                         {items.length} {items.length === 1 ? "SOURCE" : "SOURCES"}
                                     </span>
                                 </div>
@@ -198,8 +196,8 @@ export default function SourcesPage() {
                                             style={{ textDecoration: "none" }}
                                         >
                                             <div style={{
-                                                background: "#0d1117",
-                                                border: "1px solid #1c2333",
+                                                background: "var(--card)",
+                                                border: "1px solid var(--border)",
                                                 borderRadius: "12px", padding: "16px 18px",
                                                 transition: "border-color 0.2s, transform 0.2s",
                                                 cursor: "pointer",
@@ -209,14 +207,14 @@ export default function SourcesPage() {
                                                     e.currentTarget.style.transform = "translateY(-2px)";
                                                 }}
                                                 onMouseLeave={e => {
-                                                    e.currentTarget.style.borderColor = "#1c2333";
+                                                    e.currentTarget.style.borderColor = "var(--border)";
                                                     e.currentTarget.style.transform = "translateY(0)";
                                                 }}
                                             >
                                                 {/* Source name */}
                                                 <div style={{
                                                     fontSize: "13px", fontWeight: "700",
-                                                    color: "#cdd9e5", fontFamily: "'Syne', sans-serif",
+                                                    color: "var(--text)", fontFamily: "'Syne', sans-serif",
                                                     marginBottom: "8px",
                                                 }}>
                                                     {source.name}
@@ -224,7 +222,7 @@ export default function SourcesPage() {
 
                                                 {/* Article count */}
                                                 <div style={{
-                                                    fontSize: "11px", color: "#444c56",
+                                                    fontSize: "11px", color: "var(--text-sub)",
                                                     fontFamily: "'Space Mono', monospace",
                                                     marginBottom: "12px",
                                                 }}>

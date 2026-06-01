@@ -25,7 +25,7 @@ def fetch_all_feeds():
     db = SessionLocal()
 
     # Only accept articles published within the last 24 hours
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+    cutoff = datetime.utcnow() - timedelta(hours=24)
 
     try:
         # Get all existing titles to check for duplicates
@@ -57,8 +57,8 @@ def fetch_all_feeds():
                     # Get published date — always store as UTC-aware datetime
                     published_at = None
                     if hasattr(entry, "published_parsed") and entry.published_parsed:
-                        # feedparser returns UTC time tuples; make it timezone-aware
-                        published_at = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
+                        # feedparser returns UTC time tuples; save as naive UTC datetime
+                        published_at = datetime(*entry.published_parsed[:6])
 
                     # Skip articles older than 24 hours
                     if published_at and published_at < cutoff:

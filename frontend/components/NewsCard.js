@@ -3,18 +3,31 @@ import { formatDistanceToNow, isAfter, subHours } from "date-fns";
 import { useState } from "react";
 
 const CATEGORY_STYLES = {
-    LLMs: { bg: "#0a1929", color: "#00d4ff", border: "#00d4ff33" },
-    Vision: { bg: "#0d1a2e", color: "#60a5fa", border: "#60a5fa33" },
-    Robotics: { bg: "#1a1000", color: "#fb923c", border: "#fb923c33" },
-    Research: { bg: "#0a1a0a", color: "#4ade80", border: "#4ade8033" },
-    Tools: { bg: "#1a1500", color: "#fbbf24", border: "#fbbf2433" },
-    Industry: { bg: "#1a0a0a", color: "#f87171", border: "#f8717133" },
-    Community: { bg: "#160a1a", color: "#c084fc", border: "#c084fc33" },
+    LLMs:       { bg: "#0a1929", color: "#00d4ff", border: "#00d4ff33" },
+    Vision:     { bg: "#0d1a2e", color: "#60a5fa", border: "#60a5fa33" },
+    Robotics:   { bg: "#1a1000", color: "#fb923c", border: "#fb923c33" },
+    Research:   { bg: "#0a1a0a", color: "#4ade80", border: "#4ade8033" },
+    Tools:      { bg: "#1a1500", color: "#fbbf24", border: "#fbbf2433" },
+    Industry:   { bg: "#1a0a0a", color: "#f87171", border: "#f8717133" },
+    Community:  { bg: "#160a1a", color: "#c084fc", border: "#c084fc33" },
     Newsletter: { bg: "#0d0d1a", color: "#818cf8", border: "#818cf833" },
+};
+
+// Light-mode-friendly variants for category badge backgrounds
+const CATEGORY_STYLES_LIGHT = {
+    LLMs:       { bg: "#e0f7ff", color: "#0077aa", border: "#0099cc44" },
+    Vision:     { bg: "#e8f0ff", color: "#2563eb", border: "#3b82f644" },
+    Robotics:   { bg: "#fff4e8", color: "#ea580c", border: "#fb923c44" },
+    Research:   { bg: "#e8fff0", color: "#16a34a", border: "#4ade8044" },
+    Tools:      { bg: "#fffbe8", color: "#b45309", border: "#fbbf2444" },
+    Industry:   { bg: "#fff0f0", color: "#dc2626", border: "#f8717144" },
+    Community:  { bg: "#f5e8ff", color: "#9333ea", border: "#c084fc44" },
+    Newsletter: { bg: "#eeecff", color: "#4f46e5", border: "#818cf844" },
 };
 
 export default function NewsCard({ article, index = 0 }) {
     const [expanded, setExpanded] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     const timeAgo = article.published_at
         ? formatDistanceToNow(new Date(article.published_at), { addSuffix: true })
@@ -24,9 +37,8 @@ export default function NewsCard({ article, index = 0 }) {
         ? isAfter(new Date(article.published_at), subHours(new Date(), 24))
         : false;
 
-    const style = CATEGORY_STYLES[article.category] || CATEGORY_STYLES.Industry;
-
-    const [copied, setCopied] = useState(false);
+    const darkStyle  = CATEGORY_STYLES[article.category]      || CATEGORY_STYLES.Industry;
+    const lightStyle = CATEGORY_STYLES_LIGHT[article.category] || CATEGORY_STYLES_LIGHT.Industry;
 
     const handleShare = (e) => {
         e.preventDefault();
@@ -38,8 +50,8 @@ export default function NewsCard({ article, index = 0 }) {
 
     return (
         <div className="card-hover" style={{
-            background: "#0d1117",
-            border: "1px solid #1c2333",
+            background: "var(--card)",
+            border: "1px solid var(--border)",
             borderRadius: "16px",
             overflow: "hidden",
             display: "flex", flexDirection: "column",
@@ -48,7 +60,7 @@ export default function NewsCard({ article, index = 0 }) {
         }}>
 
             {/* Image */}
-            <div style={{ position: "relative", width: "100%", height: "180px", overflow: "hidden", background: "#111827" }}>
+            <div style={{ position: "relative", width: "100%", height: "180px", overflow: "hidden", background: "var(--card-hover)" }}>
                 <img
                     src={article.image_url || ""}
                     alt={article.title}
@@ -57,11 +69,11 @@ export default function NewsCard({ article, index = 0 }) {
                     onMouseLeave={e => { e.target.style.opacity = 0.8; e.target.style.transform = "scale(1)"; }}
                     onError={e => {
                         e.target.style.display = "none";
-                        e.target.parentElement.style.background = `linear-gradient(135deg, ${style.bg} 0%, #0d1117 100%)`;
+                        e.target.parentElement.style.background = `linear-gradient(135deg, ${darkStyle.bg} 0%, #0d1117 100%)`;
                         e.target.parentElement.innerHTML = `
                         <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
-                        <div style="font-size:28px;font-weight:800;font-family:'Syne',sans-serif;color:${style.color};opacity:0.3;">${article.category || "AI"}</div>
-                        <div style="font-size:10px;font-family:'Space Mono',monospace;color:${style.color};opacity:0.2;letter-spacing:0.1em;">NEXUS</div>
+                        <div style="font-size:28px;font-weight:800;font-family:'Syne',sans-serif;color:${darkStyle.color};opacity:0.3;">${article.category || "AI"}</div>
+                        <div style="font-size:10px;font-family:'Space Mono',monospace;color:${darkStyle.color};opacity:0.2;letter-spacing:0.1em;">NEXUS</div>
                         </div>
                         `;
                     }}
@@ -69,9 +81,10 @@ export default function NewsCard({ article, index = 0 }) {
 
                 {/* Badges */}
                 <div style={{ position: "absolute", top: "12px", left: "12px", right: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    {/* Category badge — uses CSS vars to adapt */}
                     <div style={{
-                        background: style.bg, color: style.color,
-                        border: `1px solid ${style.border}`,
+                        background: darkStyle.bg, color: darkStyle.color,
+                        border: `1px solid ${darkStyle.border}`,
                         borderRadius: "6px", padding: "3px 10px",
                         fontSize: "10px", fontFamily: "'Space Mono', monospace",
                         fontWeight: "700", letterSpacing: "0.05em",
@@ -101,13 +114,13 @@ export default function NewsCard({ article, index = 0 }) {
             <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "10px", flex: 1 }}>
 
                 {/* Time */}
-                <div style={{ fontSize: "11px", color: "#444c56", fontFamily: "'Space Mono', monospace" }}>
+                <div style={{ fontSize: "11px", color: "var(--text-sub)", fontFamily: "'Space Mono', monospace" }}>
                     {timeAgo}
                 </div>
 
                 {/* Title */}
                 <h2 style={{
-                    color: "#cdd9e5", fontFamily: "'Syne', sans-serif",
+                    color: "var(--text)", fontFamily: "'Syne', sans-serif",
                     fontWeight: "700", fontSize: "14px", lineHeight: "1.4",
                     display: "-webkit-box", WebkitLineClamp: 2,
                     WebkitBoxOrient: "vertical", overflow: "hidden",
@@ -116,7 +129,7 @@ export default function NewsCard({ article, index = 0 }) {
                 {/* Summary */}
                 <div>
                     <p style={{
-                        color: "#444c56", fontSize: "12px", lineHeight: "1.7",
+                        color: "var(--text-sub)", fontSize: "12px", lineHeight: "1.7",
                         display: expanded ? "block" : "-webkit-box",
                         WebkitLineClamp: expanded ? "unset" : 2,
                         WebkitBoxOrient: "vertical",
@@ -127,7 +140,7 @@ export default function NewsCard({ article, index = 0 }) {
                     {article.summary && article.summary.length > 120 && (
                         <button onClick={() => setExpanded(!expanded)} style={{
                             background: "none", border: "none",
-                            color: "#00d4ff", fontSize: "11px",
+                            color: "var(--accent)", fontSize: "11px",
                             fontFamily: "'Space Mono', monospace",
                             cursor: "pointer", padding: "4px 0", marginTop: "2px",
                         }}>
@@ -139,11 +152,11 @@ export default function NewsCard({ article, index = 0 }) {
                 {/* Footer */}
                 <div style={{
                     display: "flex", alignItems: "center", justifyContent: "space-between",
-                    paddingTop: "12px", borderTop: "1px solid #1c2333", marginTop: "auto",
+                    paddingTop: "12px", borderTop: "1px solid var(--border)", marginTop: "auto",
                 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: style.color }} />
-                        <span style={{ fontSize: "11px", color: "#444c56", fontFamily: "'DM Sans', sans-serif" }}>
+                        <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: darkStyle.color }} />
+                        <span style={{ fontSize: "11px", color: "var(--text-sub)", fontFamily: "'DM Sans', sans-serif" }}>
                             {article.source_name}
                         </span>
                     </div>
@@ -151,7 +164,7 @@ export default function NewsCard({ article, index = 0 }) {
                     {/* Share button */}
                     <button onClick={handleShare} style={{
                         background: "none", border: "none",
-                        color: copied ? "#4ade80" : "#444c56",
+                        color: copied ? "#4ade80" : "var(--text-sub)",
                         fontSize: "11px", fontFamily: "'Space Mono', monospace",
                         cursor: "pointer", padding: "0",
                         display: "flex", alignItems: "center", gap: "4px",
@@ -175,9 +188,10 @@ export default function NewsCard({ article, index = 0 }) {
                             </>
                         )}
                     </button>
+
                     <a href={article.url} target="_blank" rel="noopener noreferrer" style={{
                         display: "flex", alignItems: "center", gap: "5px",
-                        color: "#00d4ff", fontSize: "11px",
+                        color: "var(--accent)", fontSize: "11px",
                         fontFamily: "'Space Mono', monospace",
                         textDecoration: "none", transition: "opacity 0.2s",
                     }}

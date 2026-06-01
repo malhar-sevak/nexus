@@ -71,8 +71,8 @@ export default function HeroCarousel({ total }) {
 
     return (
         <div style={{
-            background: "#0d1117",
-            border: "1px solid #1c2333",
+            background: "var(--card)",
+            border: "1px solid var(--border)",
             borderRadius: "16px",
             overflow: "hidden",
             marginBottom: "32px",
@@ -83,7 +83,7 @@ export default function HeroCarousel({ total }) {
             <div
                 key={animKey}
                 style={{
-                    padding: "32px 64px 24px", // Increased horizontal padding to prevent text overlap with floating side buttons
+                    padding: "32px 64px 24px",
                     animation: "fadeUp 0.45s ease forwards",
                     minHeight: "200px",
                 }}
@@ -91,7 +91,7 @@ export default function HeroCarousel({ total }) {
                 {/* Live row */}
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
                     <span className="live-dot" />
-                    <span style={{ fontSize: "10px", color: "#00d4ff", fontFamily: "'Space Mono', monospace", letterSpacing: "0.1em" }}>
+                    <span style={{ fontSize: "10px", color: "var(--accent)", fontFamily: "'Space Mono', monospace", letterSpacing: "0.1em" }}>
                         {slide.stat} — {total} ARTICLES TRACKED
                     </span>
                 </div>
@@ -114,7 +114,7 @@ export default function HeroCarousel({ total }) {
                 <h2 style={{
                     fontFamily: "'Syne', sans-serif", fontWeight: "800",
                     fontSize: "clamp(16px, 2vw, 24px)",
-                    color: "#cdd9e5", lineHeight: "1.2",
+                    color: "var(--text)", lineHeight: "1.2",
                     marginBottom: "10px",
                 }}>
                     {slide.headline}{" "}
@@ -123,7 +123,7 @@ export default function HeroCarousel({ total }) {
 
                 {/* Sub */}
                 <p style={{
-                    fontSize: "13px", color: "#444c56",
+                    fontSize: "13px", color: "var(--text-sub)",
                     fontFamily: "'DM Sans', sans-serif",
                     lineHeight: "1.7", maxWidth: "480px",
                 }}>
@@ -131,37 +131,33 @@ export default function HeroCarousel({ total }) {
                 </p>
             </div>
 
-            {/* Left and Right floating arrow buttons */}
+            {/* Left arrow */}
             <button
                 onClick={() => go(-1)}
                 style={{
                     position: "absolute",
-                    left: "16px",
-                    top: "50%",
+                    left: "16px", top: "50%",
                     transform: "translateY(-50%)",
                     zIndex: 10,
-                    width: "40px",
-                    height: "40px",
+                    width: "40px", height: "40px",
                     borderRadius: "50%",
-                    background: "rgba(13, 17, 23, 0.8)",
+                    background: "color-mix(in srgb, var(--card) 80%, transparent)",
                     backdropFilter: "blur(4px)",
-                    border: "1px solid #1c2333",
-                    color: "#444c56",
+                    border: "1px solid var(--border)",
+                    color: "var(--text-sub)",
                     cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
+                    display: "flex", alignItems: "center", justifyContent: "center",
                     fontSize: "16px",
                     transition: "all 0.3s ease",
                 }}
-                onMouseEnter={e => { 
-                    e.currentTarget.style.borderColor = slide.accentColor; 
+                onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = slide.accentColor;
                     e.currentTarget.style.color = slide.accentColor;
                     e.currentTarget.style.boxShadow = `0 0 12px ${slide.accentColor}33`;
                 }}
-                onMouseLeave={e => { 
-                    e.currentTarget.style.borderColor = "#1c2333"; 
-                    e.currentTarget.style.color = "#444c56";
+                onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = "var(--border)";
+                    e.currentTarget.style.color = "var(--text-sub)";
                     e.currentTarget.style.boxShadow = "none";
                 }}
                 aria-label="Previous Slide"
@@ -169,36 +165,33 @@ export default function HeroCarousel({ total }) {
                 ←
             </button>
 
+            {/* Right arrow */}
             <button
                 onClick={() => go(1)}
                 style={{
                     position: "absolute",
-                    right: "16px",
-                    top: "50%",
+                    right: "16px", top: "50%",
                     transform: "translateY(-50%)",
                     zIndex: 10,
-                    width: "40px",
-                    height: "40px",
+                    width: "40px", height: "40px",
                     borderRadius: "50%",
-                    background: "rgba(13, 17, 23, 0.8)",
+                    background: "color-mix(in srgb, var(--card) 80%, transparent)",
                     backdropFilter: "blur(4px)",
-                    border: "1px solid #1c2333",
-                    color: "#444c56",
+                    border: "1px solid var(--border)",
+                    color: "var(--text-sub)",
                     cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
+                    display: "flex", alignItems: "center", justifyContent: "center",
                     fontSize: "16px",
                     transition: "all 0.3s ease",
                 }}
-                onMouseEnter={e => { 
-                    e.currentTarget.style.borderColor = slide.accentColor; 
+                onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = slide.accentColor;
                     e.currentTarget.style.color = slide.accentColor;
                     e.currentTarget.style.boxShadow = `0 0 12px ${slide.accentColor}33`;
                 }}
-                onMouseLeave={e => { 
-                    e.currentTarget.style.borderColor = "#1c2333"; 
-                    e.currentTarget.style.color = "#444c56";
+                onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = "var(--border)";
+                    e.currentTarget.style.color = "var(--text-sub)";
                     e.currentTarget.style.boxShadow = "none";
                 }}
                 aria-label="Next Slide"
@@ -208,38 +201,34 @@ export default function HeroCarousel({ total }) {
 
             {/* Bottom bar — centered dots */}
             <div style={{
-                display: "flex", 
+                display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 padding: "14px 32px",
-                borderTop: "1px solid #1c2333",
-                background: "#0a0e18",
+                borderTop: "1px solid var(--border)",
+                background: "color-mix(in srgb, var(--bg) 60%, var(--card))",
             }}>
-
-                {/* Connected dots */}
                 <div style={{ display: "flex", alignItems: "center", gap: "0" }}>
                     {SLIDES.map((_, i) => (
                         <div key={i} style={{ display: "flex", alignItems: "center" }}>
-                            {/* Dot */}
                             <button
                                 onClick={() => goTo(i)}
                                 style={{
                                     width: i === cur ? "10px" : "8px",
                                     height: i === cur ? "10px" : "8px",
                                     borderRadius: "50%",
-                                    border: `1.5px solid ${i === cur ? slide.accentColor : i < cur ? "#00d4ff44" : "#1c2333"}`,
-                                    background: i === cur ? slide.accentColor : i < cur ? "#00d4ff22" : "#07090f",
+                                    border: `1.5px solid ${i === cur ? slide.accentColor : i < cur ? "var(--accent)" : "var(--border)"}`,
+                                    background: i === cur ? slide.accentColor : i < cur ? "color-mix(in srgb, var(--accent) 22%, transparent)" : "var(--bg)",
                                     cursor: "pointer",
                                     transition: "all 0.3s ease",
                                     flexShrink: 0,
                                     padding: 0,
                                 }}
                             />
-                            {/* Connector line between dots */}
                             {i < SLIDES.length - 1 && (
                                 <div style={{
                                     width: "40px", height: "1.5px",
-                                    background: i < cur ? slide.accentColor : "#1c2333",
+                                    background: i < cur ? slide.accentColor : "var(--border)",
                                     transition: "background 0.4s ease",
                                 }} />
                             )}

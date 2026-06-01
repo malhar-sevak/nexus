@@ -18,22 +18,22 @@ export default function BackToTop() {
             style={{
                 position: "fixed", bottom: "32px", right: "32px",
                 width: "44px", height: "44px",
-                background: "#0d1117",
-                border: "1px solid #00d4ff",
+                background: "var(--card)",
+                border: "1px solid var(--accent)",
                 borderRadius: "12px",
-                color: "#00d4ff", cursor: "pointer",
+                color: "var(--accent)", cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 zIndex: 99,
                 transition: "all 0.2s ease",
-                boxShadow: "0 0 20px rgba(0,212,255,0.15)",
+                boxShadow: "0 0 20px var(--shadow-glow)",
             }}
             onMouseEnter={e => {
-                e.currentTarget.style.background = "#00d4ff";
+                e.currentTarget.style.background = "var(--accent)";
                 e.currentTarget.style.color = "#07090f";
             }}
             onMouseLeave={e => {
-                e.currentTarget.style.background = "#0d1117";
-                e.currentTarget.style.color = "#00d4ff";
+                e.currentTarget.style.background = "var(--card)";
+                e.currentTarget.style.color = "var(--accent)";
             }}
         >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
