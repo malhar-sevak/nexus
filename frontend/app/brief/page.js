@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import BackToTop from "../../components/BackToTop";
+import AudioPlayer from "../../components/AudioPlayer";
+import KeyTakeaways from "../../components/KeyTakeaways";
 import { getDigest } from "../../lib/api";
 import { format } from "date-fns";
 
@@ -33,6 +35,18 @@ export default function BriefPage() {
     const leadArticle = digest?.top_articles?.[0];
     const threadItems = digest?.top_articles?.slice(1) || [];
     const editionNum = digest?.id || 1;
+
+    // Build the full text to be spoken aloud
+    const buildAudioScript = () => {
+        if (!digest) return "";
+        const intro = `Welcome to The Nexus Brief, Edition ${editionNum}. Here is your AI and machine learning update for today. `;
+        const mainContent = digest.content ? digest.content + " " : "";
+        const articleSummaries = digest.top_articles?.map((a, i) =>
+            `Story ${i + 1}: ${a.title}. ${a.summary ? a.summary + " " : ""}`
+        ).join(" ") || "";
+        return intro + mainContent + articleSummaries;
+    };
+    const audioScript = buildAudioScript();
 
     return (
         <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
@@ -99,6 +113,15 @@ export default function BriefPage() {
                             }}>
                                 AI · ML · TECH · CURATED BY AI · DELIVERED DAILY
                             </div>
+                        </div>
+
+                        {/* Audio Player + Key Takeaways */}
+                        <div style={{ marginBottom: "32px", display: "flex", flexDirection: "column", gap: "16px" }} className="fade-up-delay-1">
+                            <AudioPlayer
+                                text={audioScript}
+                                title={`The Nexus Brief — Edition #${String(editionNum).padStart(3, "0")}`}
+                            />
+                            <KeyTakeaways content={digest.content} />
                         </div>
 
                         {/* Lead Story */}
