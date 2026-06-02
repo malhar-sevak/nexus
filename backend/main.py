@@ -71,9 +71,17 @@ def get_articles(
     query = db.query(Article)
 
     if category and category != "All":
-        query = query.filter(Article.source_category == category)
+        if "," in category:
+            cats = [c.strip() for c in category.split(",") if c.strip()]
+            query = query.filter(Article.source_category.in_(cats))
+        else:
+            query = query.filter(Article.source_category == category)
     if source and source != "All Sources":
-        query = query.filter(Article.source_name == source)
+        if "," in source:
+            srcs = [s.strip() for s in source.split(",") if s.strip()]
+            query = query.filter(Article.source_name.in_(srcs))
+        else:
+            query = query.filter(Article.source_name == source)
     if search:
         query = query.filter(Article.title.ilike(f"%{search}%"))
 
@@ -110,6 +118,23 @@ def get_article(article_id: int, db: Session = Depends(get_db)):
     if not article:
         return {"error": "Article not found"}
     return article
+
+@app.get("/api/suggestions")
+def get_suggestions(q: str = Query(""), db: Session = Depends(get_db)):
+    if not q:
+        return {"suggestions": []}
+    articles = db.query(Article).filter(Article.title.ilike(f"%{q}%")).limit(6).all()
+    return {
+        "suggestions": [
+            {
+                "id": a.id,
+                "title": a.title,
+                "url": a.url,
+                "category": a.source_category,
+            }
+            for a in articles
+        ]
+    }
 
 @app.get("/api/categories")
 def get_categories(db: Session = Depends(get_db)):

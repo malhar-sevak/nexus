@@ -1,4 +1,5 @@
 "use client";
+import { useState, useRef, useEffect } from "react";
 
 const CATEGORY_COLORS = {
     LLMs:       "#00d4ff",
@@ -13,11 +14,48 @@ const CATEGORY_COLORS = {
 
 export default function Sidebar({
     categories, sources,
-    selectedCategory, selectedSource,
+    selectedCategory = [], selectedSource = [],
     onCategorySelect, onSourceSelect,
     counts, sortBy, onSortChange,
     isCollapsed, setIsCollapsed,
 }) {
+    const [isCatOpen, setIsCatOpen] = useState(false);
+    const [isSrcOpen, setIsSrcOpen] = useState(false);
+
+    const catRef = useRef(null);
+    const srcRef = useRef(null);
+
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (catRef.current && !catRef.current.contains(event.target)) {
+                setIsCatOpen(false);
+            }
+            if (srcRef.current && !srcRef.current.contains(event.target)) {
+                setIsSrcOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const selectedCatArray = Array.isArray(selectedCategory) ? selectedCategory : [];
+    const selectedSrcArray = Array.isArray(selectedSource) ? selectedSource : [];
+
+    // Trigger buttons text
+    let catTriggerText = "All Categories";
+    if (selectedCatArray.length === 1) {
+        catTriggerText = selectedCatArray[0];
+    } else if (selectedCatArray.length > 1) {
+        catTriggerText = `${selectedCatArray[0]} (+${selectedCatArray.length - 1})`;
+    }
+
+    let srcTriggerText = "All Sources";
+    if (selectedSrcArray.length === 1) {
+        srcTriggerText = selectedSrcArray[0];
+    } else if (selectedSrcArray.length > 1) {
+        srcTriggerText = `${selectedSrcArray[0]} (+${selectedSrcArray.length - 1})`;
+    }
+
     return (
         <div style={{
             width: isCollapsed ? "56px" : "240px",
@@ -125,85 +163,210 @@ export default function Sidebar({
                     {/* Divider */}
                     <div style={{ height: "1px", background: "var(--border)", margin: "0 -4px" }} />
 
-                    {/* Category */}
-                    <div>
+                    {/* Category Dropdown */}
+                    <div ref={catRef} style={{ position: "relative" }}>
                         <div style={{
                             fontSize: "10px", fontFamily: "'Space Mono', monospace",
                             color: "var(--text-dim)", letterSpacing: "0.1em", marginBottom: "10px",
                         }}>CATEGORY</div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                            {categories.map((cat) => {
-                                const isSelected = selectedCategory === cat;
-                                const color = CATEGORY_COLORS[cat] || "var(--accent)";
-                                return (
-                                    <button key={cat} onClick={() => onCategorySelect(cat)} style={{
-                                        display: "flex", alignItems: "center",
-                                        justifyContent: "space-between",
-                                        background: isSelected ? `${color}10` : "none",
-                                        border: "none", borderRadius: "8px",
-                                        padding: "7px 10px", cursor: "pointer",
-                                        transition: "all 0.2s",
+                        
+                        <button
+                            onClick={() => { setIsCatOpen(!isCatOpen); setIsSrcOpen(false); }}
+                            style={{
+                                width: "100%",
+                                background: "var(--select-bg)", border: "1px solid var(--border)",
+                                borderRadius: "8px", padding: "10px 12px",
+                                color: selectedCatArray.length > 0 ? "var(--accent)" : "var(--text-sub)",
+                                fontSize: "12px", fontFamily: "'DM Sans', sans-serif",
+                                cursor: "pointer", display: "flex", justifyContent: "space-between",
+                                alignItems: "center", outline: "none", transition: "all 0.2s",
+                                fontWeight: selectedCatArray.length > 0 ? "600" : "normal",
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.borderColor = "var(--accent)"}
+                            onMouseLeave={e => { if (!isCatOpen) e.currentTarget.style.borderColor = "var(--border)"; }}
+                        >
+                            <span>{catTriggerText}</span>
+                            <span style={{ fontSize: "9px", opacity: 0.7, transform: isCatOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▼</span>
+                        </button>
+
+                        {isCatOpen && (
+                            <div style={{
+                                position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0,
+                                background: "var(--card)", border: "1px solid var(--border)",
+                                borderRadius: "8px", padding: "6px", zIndex: 100,
+                                display: "flex", flexDirection: "column", gap: "2px",
+                                maxHeight: "250px", overflowY: "auto", boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+                            }}>
+                                {/* "All" Option */}
+                                <button
+                                    onClick={() => onCategorySelect("All")}
+                                    style={{
+                                        display: "flex", alignItems: "center", justifyItems: "center", gap: "8px",
+                                        background: selectedCatArray.length === 0 ? "color-mix(in srgb, var(--accent) 8%, transparent)" : "none",
+                                        border: "none", borderRadius: "6px", padding: "6px 8px", cursor: "pointer",
+                                        textAlign: "left", width: "100%", transition: "all 0.15s",
                                     }}
-                                        onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "var(--card-hover-2)"; }}
-                                        onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = "none"; }}
-                                    >
-                                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                            <div style={{
-                                                width: "6px", height: "6px", borderRadius: "50%", flexShrink: 0,
-                                                background: isSelected ? color : "var(--border)",
-                                                transition: "background 0.2s",
-                                            }} />
-                                            <span style={{
-                                                fontSize: "12px", fontFamily: "'DM Sans', sans-serif",
-                                                color: isSelected ? color : "var(--text-sub)",
-                                                transition: "color 0.2s",
-                                            }}>{cat}</span>
-                                        </div>
-                                        {counts[cat] !== undefined && (
-                                            <span style={{
-                                                fontSize: "10px", fontFamily: "'Space Mono', monospace",
-                                                color: isSelected ? color : "var(--text-dim)",
-                                            }}>{counts[cat]}</span>
-                                        )}
-                                    </button>
-                                );
-                            })}
-                        </div>
+                                    onMouseEnter={e => e.currentTarget.style.background = "var(--card-hover-2)"}
+                                    onMouseLeave={e => e.currentTarget.style.background = selectedCatArray.length === 0 ? "color-mix(in srgb, var(--accent) 8%, transparent)" : "none"}
+                                >
+                                    <div style={{
+                                        width: "12px", height: "12px", border: "1px solid var(--border)",
+                                        borderRadius: "3px", display: "flex", alignItems: "center", justifyContent: "center",
+                                        background: selectedCatArray.length === 0 ? "var(--accent)" : "transparent",
+                                        borderColor: selectedCatArray.length === 0 ? "var(--accent)" : "var(--border)",
+                                    }}>
+                                        {selectedCatArray.length === 0 && <span style={{ fontSize: "8px", color: "#fff", fontWeight: "bold" }}>✓</span>}
+                                    </div>
+                                    <span style={{ fontSize: "12px", fontFamily: "'DM Sans', sans-serif", color: selectedCatArray.length === 0 ? "var(--accent)" : "var(--text-sub)" }}>
+                                        All Categories
+                                    </span>
+                                </button>
+
+                                {/* List of Categories */}
+                                {categories.filter(c => c !== "All").map((cat) => {
+                                    const isSelected = selectedCatArray.includes(cat);
+                                    const color = CATEGORY_COLORS[cat] || "var(--accent)";
+                                    return (
+                                        <button
+                                            key={cat}
+                                            onClick={() => onCategorySelect(cat)}
+                                            style={{
+                                                display: "flex", alignItems: "center", justifyContent: "space-between",
+                                                background: isSelected ? `${color}10` : "none",
+                                                border: "none", borderRadius: "6px", padding: "6px 8px", cursor: "pointer",
+                                                textAlign: "left", width: "100%", transition: "all 0.15s",
+                                            }}
+                                            onMouseEnter={e => e.currentTarget.style.background = "var(--card-hover-2)"}
+                                            onMouseLeave={e => e.currentTarget.style.background = isSelected ? `${color}10` : "none"}
+                                        >
+                                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                                <div style={{
+                                                    width: "12px", height: "12px", border: "1px solid var(--border)",
+                                                    borderRadius: "3px", display: "flex", alignItems: "center", justifyContent: "center",
+                                                    background: isSelected ? color : "transparent",
+                                                    borderColor: isSelected ? color : "var(--border)",
+                                                }}>
+                                                    {isSelected && <span style={{ fontSize: "8px", color: "#fff", fontWeight: "bold" }}>✓</span>}
+                                                </div>
+                                                <span style={{
+                                                    fontSize: "12px", fontFamily: "'DM Sans', sans-serif",
+                                                    color: isSelected ? "var(--text)" : "var(--text-sub)",
+                                                    fontWeight: isSelected ? "600" : "normal",
+                                                }}>{cat}</span>
+                                            </div>
+                                            {counts[cat] !== undefined && (
+                                                <span style={{
+                                                    fontSize: "10px", fontFamily: "'Space Mono', monospace",
+                                                    color: isSelected ? "var(--accent)" : "var(--text-dim)",
+                                                }}>{counts[cat]}</span>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
 
                     {/* Divider */}
                     <div style={{ height: "1px", background: "var(--border)", margin: "0 -4px" }} />
 
-                    {/* Sources */}
-                    <div>
+                    {/* Sources Dropdown */}
+                    <div ref={srcRef} style={{ position: "relative" }}>
                         <div style={{
                             fontSize: "10px", fontFamily: "'Space Mono', monospace",
                             color: "var(--text-dim)", letterSpacing: "0.1em", marginBottom: "10px",
                         }}>SOURCE</div>
-                        <select
-                            value={selectedSource}
-                            onChange={(e) => onSourceSelect(e.target.value)}
+                        
+                        <button
+                            onClick={() => { setIsSrcOpen(!isSrcOpen); setIsCatOpen(false); }}
                             style={{
                                 width: "100%",
                                 background: "var(--select-bg)", border: "1px solid var(--border)",
-                                borderRadius: "8px", padding: "8px 12px",
-                                color: selectedSource !== "All Sources" ? "var(--accent)" : "var(--text-sub)",
+                                borderRadius: "8px", padding: "10px 12px",
+                                color: selectedSrcArray.length > 0 ? "var(--accent)" : "var(--text-sub)",
                                 fontSize: "12px", fontFamily: "'DM Sans', sans-serif",
-                                cursor: "pointer", outline: "none",
-                                transition: "border-color 0.2s",
+                                cursor: "pointer", display: "flex", justifyContent: "space-between",
+                                alignItems: "center", outline: "none", transition: "all 0.2s",
+                                fontWeight: selectedSrcArray.length > 0 ? "600" : "normal",
                             }}
-                            onFocus={e => e.target.style.borderColor = "var(--accent)"}
-                            onBlur={e => e.target.style.borderColor = "var(--border)"}
+                            onMouseEnter={e => e.currentTarget.style.borderColor = "var(--accent)"}
+                            onMouseLeave={e => { if (!isSrcOpen) e.currentTarget.style.borderColor = "var(--border)"; }}
                         >
-                            <option value="All Sources">All Sources</option>
-                            {sources.map((source) => (
-                                <option key={source} value={source}>{source}</option>
-                            ))}
-                        </select>
+                            <span>{srcTriggerText}</span>
+                            <span style={{ fontSize: "9px", opacity: 0.7, transform: isSrcOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▼</span>
+                        </button>
+
+                        {isSrcOpen && (
+                            <div style={{
+                                position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0,
+                                background: "var(--card)", border: "1px solid var(--border)",
+                                borderRadius: "8px", padding: "6px", zIndex: 100,
+                                display: "flex", flexDirection: "column", gap: "2px",
+                                maxHeight: "250px", overflowY: "auto", boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+                            }}>
+                                {/* "All Sources" Option */}
+                                <button
+                                    onClick={() => onSourceSelect("All Sources")}
+                                    style={{
+                                        display: "flex", alignItems: "center", gap: "8px",
+                                        background: selectedSrcArray.length === 0 ? "color-mix(in srgb, var(--accent) 8%, transparent)" : "none",
+                                        border: "none", borderRadius: "6px", padding: "6px 8px", cursor: "pointer",
+                                        textAlign: "left", width: "100%", transition: "all 0.15s",
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.background = "var(--card-hover-2)"}
+                                    onMouseLeave={e => e.currentTarget.style.background = selectedSrcArray.length === 0 ? "color-mix(in srgb, var(--accent) 8%, transparent)" : "none"}
+                                >
+                                    <div style={{
+                                        width: "12px", height: "12px", border: "1px solid var(--border)",
+                                        borderRadius: "3px", display: "flex", alignItems: "center", justifyContent: "center",
+                                        background: selectedSrcArray.length === 0 ? "var(--accent)" : "transparent",
+                                        borderColor: selectedSrcArray.length === 0 ? "var(--accent)" : "var(--border)",
+                                    }}>
+                                        {selectedSrcArray.length === 0 && <span style={{ fontSize: "8px", color: "#fff", fontWeight: "bold" }}>✓</span>}
+                                    </div>
+                                    <span style={{ fontSize: "12px", fontFamily: "'DM Sans', sans-serif", color: selectedSrcArray.length === 0 ? "var(--accent)" : "var(--text-sub)" }}>
+                                        All Sources
+                                    </span>
+                                </button>
+
+                                {/* List of Sources */}
+                                {sources.map((src) => {
+                                    const isSelected = selectedSrcArray.includes(src);
+                                    return (
+                                        <button
+                                            key={src}
+                                            onClick={() => onSourceSelect(src)}
+                                            style={{
+                                                display: "flex", alignItems: "center", gap: "8px",
+                                                background: isSelected ? "color-mix(in srgb, var(--accent) 8%, transparent)" : "none",
+                                                border: "none", borderRadius: "6px", padding: "6px 8px", cursor: "pointer",
+                                                textAlign: "left", width: "100%", transition: "all 0.15s",
+                                            }}
+                                            onMouseEnter={e => e.currentTarget.style.background = "var(--card-hover-2)"}
+                                            onMouseLeave={e => e.currentTarget.style.background = isSelected ? "color-mix(in srgb, var(--accent) 8%, transparent)" : "none"}
+                                        >
+                                            <div style={{
+                                                width: "12px", height: "12px", border: "1px solid var(--border)",
+                                                borderRadius: "3px", display: "flex", alignItems: "center", justifyContent: "center",
+                                                background: isSelected ? "var(--accent)" : "transparent",
+                                                borderColor: isSelected ? "var(--accent)" : "var(--border)",
+                                            }}>
+                                                {isSelected && <span style={{ fontSize: "8px", color: "#fff", fontWeight: "bold" }}>✓</span>}
+                                            </div>
+                                            <span style={{
+                                                fontSize: "12px", fontFamily: "'DM Sans', sans-serif",
+                                                color: isSelected ? "var(--accent)" : "var(--text-sub)",
+                                                fontWeight: isSelected ? "600" : "normal",
+                                            }}>{src}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
 
                     {/* Reset Filters */}
-                    {(selectedCategory !== "All" || selectedSource !== "All Sources" || sortBy !== "latest") && (
+                    {(selectedCatArray.length > 0 || selectedSrcArray.length > 0 || sortBy !== "latest") && (
                         <button
                             onClick={() => {
                                 onCategorySelect("All");

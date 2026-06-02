@@ -19,8 +19,8 @@ export default function ArticleFeed({
     const [articles, setArticles]       = useState(initialArticles);
     const [categories, setCategories]   = useState(initialCategories);
     const [sources, setSources]         = useState(initialSources);
-    const [selectedCat, setSelectedCat] = useState("All");
-    const [selectedSource, setSelectedSource] = useState("All Sources");
+    const [selectedCat, setSelectedCat] = useState([]);
+    const [selectedSource, setSelectedSource] = useState([]);
     const [sortBy, setSortBy]           = useState("latest");
     const [search, setSearch]           = useState("");
     const [query, setQuery]             = useState("");
@@ -35,6 +35,24 @@ export default function ArticleFeed({
     const observerRef   = useRef(null);
     const sentinelRef   = useRef(null);
     const skipFirstFetch = useRef(true);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            const searchQuery = params.get("search");
+            if (searchQuery) {
+                setSearch(searchQuery);
+                setQuery(searchQuery);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setQuery(search);
+        }, 300);
+        return () => clearTimeout(handler);
+    }, [search]);
 
     useEffect(() => {
         skipFirstFetch.current = false;
@@ -88,8 +106,35 @@ export default function ArticleFeed({
         return () => observerRef.current?.disconnect();
     }, [hasMore, loadingMore, loading]);
 
-    const handleCategorySelect = (cat) => setSelectedCat(cat);
-    const handleSourceSelect   = (src) => setSelectedSource(src);
+    const handleCategorySelect = (cat) => {
+        if (cat === "All") {
+            setSelectedCat([]);
+        } else {
+            setSelectedCat(prev => {
+                const arr = Array.isArray(prev) ? prev : [];
+                if (arr.includes(cat)) {
+                    return arr.filter(c => c !== cat);
+                } else {
+                    return [...arr, cat];
+                }
+            });
+        }
+    };
+    
+    const handleSourceSelect = (src) => {
+        if (src === "All Sources") {
+            setSelectedSource([]);
+        } else {
+            setSelectedSource(prev => {
+                const arr = Array.isArray(prev) ? prev : [];
+                if (arr.includes(src)) {
+                    return arr.filter(s => s !== src);
+                } else {
+                    return [...arr, src];
+                }
+            });
+        }
+    };
     const handleSortChange     = (s)   => setSortBy(s);
     const handleSearch         = ()    => setQuery(search);
 
